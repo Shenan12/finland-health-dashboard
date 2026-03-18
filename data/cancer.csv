@@ -1,0 +1,111 @@
+Country,Year,Cancer type,Deaths per 100 000 population,Prevalence per 100 000
+Finland,2000,All cancers,199.21,2798.2
+Finland,2000,Lung cancer,33.56,258.9
+Finland,2000,Breast cancer,19.22,799.9
+Finland,2000,Colorectal,23.39,607.7
+Finland,2000,Prostate,13.54,699.1
+Finland,2001,All cancers,199.48,2822.9
+Finland,2001,Lung cancer,36.28,255.9
+Finland,2001,Breast cancer,20.67,797.6
+Finland,2001,Colorectal,24.26,598.0
+Finland,2001,Prostate,14.76,701.2
+Finland,2002,All cancers,199.41,2826.7
+Finland,2002,Lung cancer,33.48,263.9
+Finland,2002,Breast cancer,21.2,816.1
+Finland,2002,Colorectal,22.6,615.7
+Finland,2002,Prostate,14.78,715.6
+Finland,2003,All cancers,195.83,2852.0
+Finland,2003,Lung cancer,32.26,264.9
+Finland,2003,Breast cancer,20.49,812.6
+Finland,2003,Colorectal,24.45,620.8
+Finland,2003,Prostate,14.79,699.4
+Finland,2004,All cancers,196.35,2866.9
+Finland,2004,Lung cancer,31.5,281.3
+Finland,2004,Breast cancer,17.07,823.3
+Finland,2004,Colorectal,22.23,618.3
+Finland,2004,Prostate,15.68,708.6
+Finland,2005,All cancers,192.59,2898.0
+Finland,2005,Lung cancer,30.51,294.7
+Finland,2005,Breast cancer,17.08,815.1
+Finland,2005,Colorectal,22.0,623.5
+Finland,2005,Prostate,14.64,705.5
+Finland,2006,All cancers,190.86,2913.8
+Finland,2006,Lung cancer,30.95,291.5
+Finland,2006,Breast cancer,16.9,818.0
+Finland,2006,Colorectal,23.57,636.5
+Finland,2006,Prostate,14.78,717.5
+Finland,2007,All cancers,192.71,2926.3
+Finland,2007,Lung cancer,29.94,302.6
+Finland,2007,Breast cancer,19.68,822.4
+Finland,2007,Colorectal,23.33,649.3
+Finland,2007,Prostate,13.69,720.2
+Finland,2008,All cancers,192.26,2935.2
+Finland,2008,Lung cancer,30.92,308.0
+Finland,2008,Breast cancer,18.34,835.8
+Finland,2008,Colorectal,23.44,639.5
+Finland,2008,Prostate,11.72,726.2
+Finland,2009,All cancers,187.46,2957.5
+Finland,2009,Lung cancer,31.03,318.5
+Finland,2009,Breast cancer,16.6,850.4
+Finland,2009,Colorectal,21.52,653.1
+Finland,2009,Prostate,13.62,719.0
+Finland,2010,All cancers,188.81,2987.1
+Finland,2010,Lung cancer,30.6,330.4
+Finland,2010,Breast cancer,17.88,839.3
+Finland,2010,Colorectal,20.81,654.6
+Finland,2010,Prostate,12.36,729.1
+Finland,2011,All cancers,186.46,2989.9
+Finland,2011,Lung cancer,29.21,335.8
+Finland,2011,Breast cancer,16.2,842.6
+Finland,2011,Colorectal,22.29,657.3
+Finland,2011,Prostate,14.13,724.9
+Finland,2012,All cancers,183.99,3020.8
+Finland,2012,Lung cancer,30.25,341.1
+Finland,2012,Breast cancer,16.75,855.2
+Finland,2012,Colorectal,19.52,664.4
+Finland,2012,Prostate,12.01,739.3
+Finland,2013,All cancers,185.4,3041.4
+Finland,2013,Lung cancer,29.38,356.9
+Finland,2013,Breast cancer,16.5,855.5
+Finland,2013,Colorectal,20.11,672.3
+Finland,2013,Prostate,13.03,733.5
+Finland,2014,All cancers,181.63,3058.9
+Finland,2014,Lung cancer,27.47,360.3
+Finland,2014,Breast cancer,16.1,869.1
+Finland,2014,Colorectal,20.78,693.5
+Finland,2014,Prostate,13.47,744.3
+Finland,2015,All cancers,182.57,3060.5
+Finland,2015,Lung cancer,29.22,369.1
+Finland,2015,Breast cancer,14.57,861.1
+Finland,2015,Colorectal,19.81,686.2
+Finland,2015,Prostate,11.36,735.1
+Finland,2016,All cancers,182.28,3089.3
+Finland,2016,Lung cancer,26.6,362.8
+Finland,2016,Breast cancer,15.73,862.6
+Finland,2016,Colorectal,19.58,690.3
+Finland,2016,Prostate,11.48,744.8
+Finland,2017,All cancers,179.08,3110.4
+Finland,2017,Lung cancer,27.61,378.9
+Finland,2017,Breast cancer,13.24,867.6
+Finland,2017,Colorectal,16.83,704.4
+Finland,2017,Prostate,12.3,746.4
+Finland,2018,All cancers,179.05,3123.7
+Finland,2018,Lung cancer,25.77,380.5
+Finland,2018,Breast cancer,15.62,873.3
+Finland,2018,Colorectal,17.52,703.7
+Finland,2018,Prostate,12.11,753.7
+Finland,2019,All cancers,177.87,3132.9
+Finland,2019,Lung cancer,25.08,394.5
+Finland,2019,Breast cancer,12.33,881.5
+Finland,2019,Colorectal,16.24,706.7
+Finland,2019,Prostate,10.22,753.6
+Finland,2020,All cancers,174.03,3164.9
+Finland,2020,Lung cancer,23.7,397.6
+Finland,2020,Breast cancer,14.81,890.0
+Finland,2020,Colorectal,18.33,726.1
+Finland,2020,Prostate,9.29,767.2
+Finland,2021,All cancers,172.97,3168.4
+Finland,2021,Lung cancer,26.18,414.7
+Finland,2021,Breast cancer,14.0,896.0
+Finland,2021,Colorectal,17.44,724.4
+Finland,2021,Prostate,9.26,753.4
