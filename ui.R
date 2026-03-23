@@ -1,11 +1,11 @@
-# =============================================================================
-# ui.R – Dashboard layout for Finland Health Dashboard
+## =============================================================================
+# ui.R - Dashboard layout for Finland Health Dashboard
 # =============================================================================
 
 ui <- dashboardPage(
   skin = "blue",
-
-  # ── Header ──────────────────────────────────────────────────────────────
+  
+  # -- Header --------------------------------------------------------------
   dashboardHeader(
     title = tags$span(
       tags$img(
@@ -17,8 +17,8 @@ ui <- dashboardPage(
     ),
     titleWidth = 300
   ),
-
-  # ── Sidebar ──────────────────────────────────────────────────────────────
+  
+  # -- Sidebar --------------------------------------------------------------
   dashboardSidebar(
     width = 230,
     sidebarMenu(
@@ -30,10 +30,10 @@ ui <- dashboardPage(
       menuItem("Screening Calculator",  tabName = "screening",   icon = icon("calculator"))
     )
   ),
-
-  # ── Body ──────────────────────────────────────────────────────────────────
+  
+  # -- Body ------------------------------------------------------------------
   dashboardBody(
-
+    
     # Custom CSS for polished look
     tags$head(
       tags$style(HTML("
@@ -58,68 +58,68 @@ ui <- dashboardPage(
         }
       "))
     ),
-
+    
     tabItems(
-
-      # ── TAB 1: Home ────────────────────────────────────────────────────
+      
+      # -- TAB 1: Home ----------------------------------------------------
       tabItem(
         tabName = "home",
         fluidRow(
           box(
             width = 12, status = "primary", solidHeader = TRUE,
-            title = "Finland Health Trends Dashboard (2000–2024)",
+            title = "Finland Health Trends Dashboard (2000-2024)",
             p(
               "This dashboard provides an interactive analysis of key public-health ",
               "indicators in ", tags$strong("Finland"), " over the period ",
-              tags$strong("2000–2024"), ". It combines three official data sources to ",
+              tags$strong("2000-2024"), ". It combines three official data sources to ",
               "visualise demographic mortality patterns, hospital bed capacity, cancer ",
               "burden, and to support evidence-based screening decisions."
             ),
             p("Use the sidebar to navigate the five analytical sections:"),
             tags$ul(
-              tags$li(tags$strong("Home"), " – project overview and data citations."),
-              tags$li(tags$strong("Theoretical Framework"), " – mathematical background."),
-              tags$li(tags$strong("Demographics"), " – age-specific probability of death over time."),
-              tags$li(tags$strong("Healthcare & Epi"), " – hospital capacity vs cancer mortality."),
-              tags$li(tags$strong("Screening Calculator"), " – Bayesian PPV tool.")
+              tags$li(tags$strong("Home"), " - project overview and data citations."),
+              tags$li(tags$strong("Theoretical Framework"), " - mathematical background."),
+              tags$li(tags$strong("Demographics"), " - age-specific probability of death over time."),
+              tags$li(tags$strong("Healthcare & Epi"), " - hospital capacity vs cancer mortality."),
+              tags$li(tags$strong("Screening Calculator"), " - Bayesian PPV tool.")
             )
           )
         ),
         fluidRow(
-          infoBox("Life Table Years",   "2000 – 2024", icon = icon("calendar"), color = "blue",  width = 4),
-          infoBox("Hospital Bed Years", "2000 – 2023", icon = icon("bed"),      color = "green", width = 4),
-          infoBox("Cancer Data Years",  "2000 – 2021", icon = icon("ribbon"),   color = "red",   width = 4)
+          infoBox("Life Table Years",   "2000 - 2024", icon = icon("calendar"), color = "blue",  width = 4),
+          infoBox("Hospital Bed Years", "2000 - 2023", icon = icon("bed"),      color = "green", width = 4),
+          infoBox("Cancer Data Years",  "2000 - 2021", icon = icon("ribbon"),   color = "red",   width = 4)
         ),
         fluidRow(
           box(
             width = 12, title = "Official Data Citations", status = "info",
             div(class = "citation-box",
-              tags$ol(
-                tags$li(
-                  "Human Mortality Database (HMD). ",
-                  tags$em("Life tables for Finland."), " ",
-                  tags$a("https://www.mortality.org", href = "https://www.mortality.org", target = "_blank"),
-                  ". Accessed 2024."
-                ),
-                tags$li(
-                  "OECD Health Statistics. ",
-                  tags$em("Hospital beds (per 1 000 population)."), " ",
-                  tags$a("https://stats.oecd.org", href = "https://stats.oecd.org", target = "_blank"),
-                  ". Accessed 2024."
-                ),
-                tags$li(
-                  "IARC / Global Cancer Observatory. ",
-                  tags$em("Cancer incidence and mortality for Finland."), " ",
-                  tags$a("https://gco.iarc.fr", href = "https://gco.iarc.fr", target = "_blank"),
-                  ". Accessed 2024."
+                tags$ol(
+                  tags$li(
+                    "Statistics Finland. ",
+                    tags$em("Life table by age and sex, 1986-2024."), " ",
+                    tags$a("https://pxdata.stat.fi/PxWeb/pxweb/en/StatFin/StatFin__kuol/statfin_kuol_pxt_12ap.px/", href = "https://pxdata.stat.fi/PxWeb/pxweb/en/StatFin/StatFin__kuol/statfin_kuol_pxt_12ap.px/", target = "_blank"),
+                    ". Accessed 2026."
+                  ),
+                  tags$li(
+                    "Our World in Data. ",
+                    tags$em("Hospital beds (per 1,000 people)."), " ",
+                    tags$a("https://ourworldindata.org/grapher/hospital-beds-per-1000-people", href = "https://ourworldindata.org/grapher/hospital-beds-per-1000-people", target = "_blank"),
+                    ". Accessed 2026."
+                  ),
+                  tags$li(
+                    "Our World in Data. ",
+                    tags$em("Death rate from cancer."), " ",
+                    tags$a("https://ourworldindata.org/grapher/death-rate-from-cancer", href = "https://ourworldindata.org/grapher/death-rate-from-cancer", target = "_blank"),
+                    ". Accessed 2026."
+                  )
                 )
-              )
             )
           )
         )
       ),
-
-      # ── TAB 2: Theoretical Framework ────────────────────────────────────
+      
+      # -- TAB 2: Theoretical Framework ------------------------------------
       tabItem(
         tabName = "theory",
         withMathJax(),
@@ -147,8 +147,8 @@ ui <- dashboardPage(
               ),
               p("$$q_x = \\frac{d_x}{l_x}$$"),
               tags$ul(
-                tags$li("\\( d_x \\) – number of deaths between ages \\( x \\) and \\( x+1 \\)"),
-                tags$li("\\( l_x \\) – number of survivors reaching exact age \\( x \\) (radix = 100 000)")
+                tags$li("\\( d_x \\) - number of deaths between ages \\( x \\) and \\( x+1 \\)"),
+                tags$li("\\( l_x \\) - number of survivors reaching exact age \\( x \\) (radix = 100 000)")
               ),
               p("In the force-of-mortality formulation:"),
               p("$$q_x = 1 - e^{-\\int_x^{x+1} \\mu(t)\\, dt} \\approx 1 - e^{-\\mu_x}$$"),
@@ -173,13 +173,13 @@ ui <- dashboardPage(
               p("Equivalently, using Bayes' theorem:"),
               p("$$P(D^+ | T^+) = \\frac{P(T^+ | D^+)\\, P(D^+)}{P(T^+)}$$"),
               tags$ul(
-                tags$li("\\( P(T^+|D^+) \\) – sensitivity (true positive rate)"),
-                tags$li("\\( P(D^+) \\) – prevalence (prior probability of disease)"),
-                tags$li("\\( P(T^+) \\) – marginal probability of a positive test")
+                tags$li("\\( P(T^+|D^+) \\) - sensitivity (true positive rate)"),
+                tags$li("\\( P(D^+) \\) - prevalence (prior probability of disease)"),
+                tags$li("\\( P(T^+) \\) - marginal probability of a positive test")
               ),
               p(
                 "A high sensitivity alone is insufficient; low prevalence can still yield ",
-                "a low PPV—highlighting the importance of targeted screening programmes."
+                "a low PPV-highlighting the importance of targeted screening programmes."
               )
             )
           )
@@ -187,17 +187,17 @@ ui <- dashboardPage(
         fluidRow(
           box(
             width = 12, status = "warning",
-            title = "3. Gompertz–Makeham Mortality Model",
+            title = "3. Gompertz-Makeham Mortality Model",
             div(
               class = "equation-box",
               p(
-                "The Gompertz–Makeham law describes the exponential increase of mortality ",
+                "The Gompertz-Makeham law describes the exponential increase of mortality ",
                 "with age and is widely used in actuarial and demographic studies:"
               ),
               p("$$\\mu(x) = A + B \\cdot e^{\\,cx}$$"),
               tags$ul(
-                tags$li("\\( A \\) – age-independent background hazard (accidents, infections)"),
-                tags$li("\\( B, c \\) – parameters governing the age-related exponential rise")
+                tags$li("\\( A \\) - age-independent background hazard (accidents, infections)"),
+                tags$li("\\( B, c \\) - parameters governing the age-related exponential rise")
               ),
               p(
                 "For Finland, estimates suggest \\( c \\approx 0.09 \\) for both sexes, ",
@@ -207,17 +207,17 @@ ui <- dashboardPage(
           )
         )
       ),
-
-      # ── TAB 3: Demographics ──────────────────────────────────────────────
+      
+      # -- TAB 3: Demographics ----------------------------------------------
       tabItem(
         tabName = "demographics",
         fluidRow(
           box(
             width = 12, status = "primary", solidHeader = TRUE,
-            title = "Age-Specific Probability of Death — Finland",
+            title = "Age-Specific Probability of Death - Finland",
             p(
               "Interactive chart of \\( q_x \\) (per mille) by age. ",
-              "Use the year slider to animate change across ", strong("2000–2024"), ". ",
+              "Use the year slider to animate change across ", strong("2000-2024"), ". ",
               "Toggle between males, females, or both using the filter below."
             )
           )
@@ -240,7 +240,7 @@ ui <- dashboardPage(
             checkboxInput("demo_log", "Log-scale Y-axis", value = FALSE),
             hr(),
             helpText(
-              "Click the play button (▶) on the slider to animate mortality ",
+              "Click the play button (\u25B6) on the slider to animate mortality ",
               "improvement over time."
             )
           ),
@@ -251,18 +251,18 @@ ui <- dashboardPage(
           )
         )
       ),
-
-      # ── TAB 4: Healthcare & Epi ──────────────────────────────────────────
+      
+      # -- TAB 4: Healthcare & Epi ------------------------------------------
       tabItem(
         tabName = "epi",
         fluidRow(
           box(
             width = 12, status = "primary", solidHeader = TRUE,
-            title = "Healthcare Capacity & Cancer Burden — Finland",
+            title = "Healthcare Capacity & Cancer Burden - Finland",
             p(
               "Side-by-side comparison of ", strong("hospital bed capacity"),
-              " (2000–2023) and ", strong("cancer mortality rates"),
-              " (2000–2021). Note the different data extents."
+              " (2000-2023) and ", strong("cancer mortality rates"),
+              " (2000-2021). Note the different data extents."
             )
           )
         ),
@@ -280,12 +280,6 @@ ui <- dashboardPage(
           box(
             width = 6, status = "danger",
             title = "Cancer Mortality Rate per 100 000 Population",
-            selectInput(
-              "cancer_type_sel", "Cancer type:",
-              choices  = c("All cancers", "Lung cancer", "Breast cancer",
-                           "Colorectal", "Prostate"),
-              selected = "All cancers"
-            ),
             plotlyOutput("cancer_plot", height = "380px")
           )
         ),
@@ -294,15 +288,15 @@ ui <- dashboardPage(
             width = 12, status = "info",
             title = "Data Notes",
             tags$ul(
-              tags$li("Hospital bed data (OECD) covers 2000–2023 (24 data points)."),
-              tags$li("Cancer mortality data (IARC/GCO) covers 2000–2021 (22 data points)."),
+              tags$li("Hospital bed data (Our World in Data) covers 2000-2023 (24 data points)."),
+              tags$li("Cancer mortality data (Our World in Data) covers 2000-2021 (22 data points)."),
               tags$li("Mismatched timelines are intentional; each dataset uses its available extent.")
             )
           )
         )
       ),
-
-      # ── TAB 5: Screening Calculator ──────────────────────────────────────
+      
+      # -- TAB 5: Screening Calculator --------------------------------------
       tabItem(
         tabName = "screening",
         withMathJax(),
@@ -312,8 +306,8 @@ ui <- dashboardPage(
             title = "Bayesian Positive Predictive Value (PPV) Calculator",
             p(
               "Calculate the PPV of a cancer screening test for Finland using Bayes' Theorem. ",
-              "The prevalence field is pre-filled with Finland's 2021 all-cancer estimate from ",
-              "the IARC data."
+              "The prevalence field is pre-filled with a baseline estimate for Finland. ",
+              "Adjust the parameters to evaluate different screening scenarios."
             )
           )
         ),
@@ -332,7 +326,7 @@ ui <- dashboardPage(
             numericInput(
               "ppv_prevalence",
               "Cancer Prevalence (per 100 000):",
-              value  = 2800,   # updated by server observer using Finland 2021 data
+              value  = 3168,   # updated by server observer using Finland 2021 data
               min    = 1,
               max    = 10000,
               step   = 1
@@ -340,8 +334,8 @@ ui <- dashboardPage(
             actionButton("ppv_calc", "Calculate PPV", class = "btn-primary btn-block"),
             hr(),
             helpText(
-              "Pre-filled prevalence is derived from Finland's 2021 ",
-              "IARC all-cancer estimate. Adjust to explore other scenarios."
+              "Pre-filled prevalence is an assumed baseline estimate for demonstration. ",
+              "Adjust to explore other scenarios."
             )
           ),
           box(

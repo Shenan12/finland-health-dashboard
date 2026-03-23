@@ -1,40 +1,40 @@
 # =============================================================================
-# server.R – Reactive logic for Finland Health Dashboard
+# server.R - Reactive logic for Finland Health Dashboard
 # =============================================================================
 
 server <- function(input, output, session) {
-
-  # ── Update prevalence numeric input once global.R has loaded ──────────────
+  
+  # -- Update prevalence numeric input once global.R has loaded --------------
   observe({
     updateNumericInput(
       session, "ppv_prevalence",
       value = round(finland_2021_prevalence, 1)
     )
   })
-
-  # ══════════════════════════════════════════════════════════════════════════
+  
+  # ==========================================================================
   # TAB 3: Demographics
-  # ══════════════════════════════════════════════════════════════════════════
-
+  # ==========================================================================
+  
   output$demo_plot <- renderPlotly({
-
+    
     sel_year <- input$demo_year
     sel_sex  <- input$demo_sex
     use_log  <- input$demo_log
-
+    
     df <- life_raw |>
       filter(year == sel_year)
-
+    
     if (sel_sex != "Both") {
       df <- df |> filter(sex == sel_sex)
     }
-
+    
     color_map <- c("Male" = "#2171b5", "Female" = "#e63946")
-
+    
     p <- plot_ly()
-
+    
     sexes <- if (sel_sex == "Both") c("Male", "Female") else sel_sex
-
+    
     for (s in sexes) {
       d <- df |> filter(sex == s)
       p <- p |>
@@ -53,21 +53,20 @@ server <- function(input, output, session) {
           )
         )
     }
-
+    
     y_axis_type <- if (use_log) "log" else "linear"
-
+    
     p |>
       layout(
         title  = list(
-          text = paste0("Finland – Age-specific Mortality (q\u2093), Year: <b>", sel_year, "</b>"),
+          text = paste0("Finland - Age-specific Mortality (q\u2093), Year: <b>", sel_year, "</b>"),
           font = list(size = 14)
         ),
         xaxis  = list(
           title      = "Age (years)",
-          tickvals   = lt_ages,
-          ticktext   = as.character(lt_ages),
           showgrid   = TRUE,
-          gridcolor  = "#e0e0e0"
+          gridcolor  = "#e0e0e0",
+          zeroline   = FALSE
         ),
         yaxis  = list(
           title     = "Probability of death (per mille)",
@@ -81,17 +80,17 @@ server <- function(input, output, session) {
         paper_bgcolor = "#fafafa"
       )
   })
-
-  # ══════════════════════════════════════════════════════════════════════════
+  
+  # ==========================================================================
   # TAB 4: Healthcare & Epi
-  # ══════════════════════════════════════════════════════════════════════════
-
-  # ── Hospital Beds ──────────────────────────────────────────────────────────
+  # ==========================================================================
+  
+  # -- Hospital Beds ----------------------------------------------------------
   output$beds_plot <- renderPlotly({
-
+    
     df   <- beds_raw
     smth <- input$beds_smooth
-
+    
     p <- plot_ly(
       data = df, x = ~year, y = ~beds_per_100k,
       type = "scatter", mode = "lines+markers",
@@ -100,7 +99,7 @@ server <- function(input, output, session) {
       marker = list(color = "#27ae60", size = 6),
       hovertemplate = "<b>Year:</b> %{x}<br><b>Beds / 100k:</b> %{y:.1f}<extra></extra>"
     )
-
+    
     if (smth == "Loess") {
       lo  <- loess(beds_per_100k ~ year, data = df, span = 0.5)
       yfit <- predict(lo, newdata = df)
@@ -124,11 +123,11 @@ server <- function(input, output, session) {
           data = df
         )
     }
-
+    
     p |>
       layout(
         xaxis = list(title = "Year", showgrid = TRUE, gridcolor = "#e0e0e0",
-                     dtick = 2),
+                     dtick = 2, tickformat = "d", range = c(2000, 2024)),
         yaxis = list(title = "Beds per 100 000 population",
                      showgrid = TRUE, gridcolor = "#e0e0e0"),
         legend = list(orientation = "h", x = 0, y = -0.2),
@@ -136,60 +135,49 @@ server <- function(input, output, session) {
         paper_bgcolor = "#fafafa"
       )
   })
-
-  # ── Cancer Mortality ───────────────────────────────────────────────────────
+  
+  # -- Cancer Mortality -------------------------------------------------------
   output$cancer_plot <- renderPlotly({
-
-    ctype <- input$cancer_type_sel
-
-    df <- cancer_raw |>
-      filter(cancer_type == ctype)
-
-    color_map <- c(
-      "All cancers"  = "#c0392b",
-      "Lung cancer"  = "#8e44ad",
-      "Breast cancer"= "#e91e8c",
-      "Colorectal"   = "#e67e22",
-      "Prostate"     = "#2980b9"
-    )
-    col <- color_map[ctype]
-
+    
+    # Directly plot the raw data since there is only one overall cancer type now
+    df <- cancer_raw
+    
     plot_ly(
       data = df, x = ~year, y = ~deaths_per_100k,
       type = "scatter", mode = "lines+markers",
-      name = ctype,
-      line   = list(color = col, width = 2),
-      marker = list(color = col, size = 6),
+      name = "Cancer Mortality",
+      line   = list(color = "#c0392b", width = 2),
+      marker = list(color = "#c0392b", size = 6),
       hovertemplate = "<b>Year:</b> %{x}<br><b>Deaths / 100k:</b> %{y:.2f}<extra></extra>"
     ) |>
       layout(
         xaxis = list(title = "Year", showgrid = TRUE, gridcolor = "#e0e0e0",
-                     dtick = 2),
+                     dtick = 2, tickformat = "d", range = c(2000, 2024)),
         yaxis = list(title = "Deaths per 100 000 population",
                      showgrid = TRUE, gridcolor = "#e0e0e0"),
         plot_bgcolor  = "#fafafa",
         paper_bgcolor = "#fafafa"
       )
   })
-
-  # ══════════════════════════════════════════════════════════════════════════
+  
+  # ==========================================================================
   # TAB 5: Screening Calculator
-  # ══════════════════════════════════════════════════════════════════════════
-
+  # ==========================================================================
+  
   ppv_results <- eventReactive(input$ppv_calc, {
     sensitivity <- input$ppv_sensitivity / 100
     specificity <- input$ppv_specificity / 100
     prevalence  <- (input$ppv_prevalence %||% finland_2021_prevalence) / 100000
-
+    
     # Bayes' theorem
     tp  <- sensitivity * prevalence
     fp  <- (1 - specificity) * (1 - prevalence)
     fn  <- (1 - sensitivity) * prevalence
     tn  <- specificity * (1 - prevalence)
-
+    
     ppv <- tp / (tp + fp)
     npv <- tn / (tn + fn)
-
+    
     list(
       ppv         = ppv,
       npv         = npv,
@@ -199,7 +187,7 @@ server <- function(input, output, session) {
       tp = tp, fp = fp, fn = fn, tn = tn
     )
   }, ignoreNULL = FALSE)
-
+  
   output$ppv_result <- renderValueBox({
     res <- ppv_results()
     valueBox(
@@ -209,7 +197,7 @@ server <- function(input, output, session) {
       color    = if (res$ppv >= 0.5) "green" else "yellow"
     )
   })
-
+  
   output$npv_result <- renderValueBox({
     res <- ppv_results()
     valueBox(
@@ -219,7 +207,7 @@ server <- function(input, output, session) {
       color    = if (res$npv >= 0.9) "green" else "yellow"
     )
   })
-
+  
   output$prev_result <- renderValueBox({
     prev_val <- (input$ppv_prevalence %||% finland_2021_prevalence)
     valueBox(
@@ -229,24 +217,24 @@ server <- function(input, output, session) {
       color    = "blue"
     )
   })
-
+  
   output$ppv_plot <- renderPlotly({
     res <- ppv_results()
-
+    
     # Sensitivity sweep for PPV curve
     prev <- res$prevalence
     spec <- res$specificity
     sens_seq <- seq(0.01, 0.99, by = 0.01)
     ppv_seq  <- (sens_seq * prev) / (sens_seq * prev + (1 - spec) * (1 - prev))
     npv_seq  <- (spec * (1 - prev)) /
-                (spec * (1 - prev) + (1 - sens_seq) * prev)
-
+      (spec * (1 - prev) + (1 - sens_seq) * prev)
+    
     df_curve <- data.frame(
       sensitivity = sens_seq * 100,
       ppv         = ppv_seq  * 100,
       npv         = npv_seq  * 100
     )
-
+    
     plot_ly(df_curve, x = ~sensitivity) |>
       add_trace(
         y = ~ppv, type = "scatter", mode = "lines",
@@ -274,7 +262,7 @@ server <- function(input, output, session) {
         paper_bgcolor = "#fafafa"
       )
   })
-
+  
   output$ppv_formula_display <- renderUI({
     res <- ppv_results()
     withMathJax(
