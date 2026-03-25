@@ -227,6 +227,46 @@ server <- function(input, output, session) {
       )
   })
   
+  # -- Correlation Box --------------------------------------------------------
+  output$corr_box <- renderValueBox({
+    # Calculate Pearson correlation (r)
+    r_val <- cor(correlation_df$beds_per_100k, correlation_df$deaths_per_100k, use = "complete.obs")
+    
+    valueBox(
+      value = round(r_val, 3),
+      subtitle = "Pearson Correlation (r)",
+      icon = icon("link"),
+      color = if (r_val < -0.7) "red" else "yellow"
+    )
+  })
+  
+  # -- Correlation Scatter Plot -----------------------------------------------
+  output$corr_scatter <- renderPlotly({
+    # Fit a linear regression line
+    fit <- lm(deaths_per_100k ~ beds_per_100k, data = correlation_df)
+    
+    plot_ly(correlation_df, x = ~beds_per_100k) |>
+      add_markers(
+        y = ~deaths_per_100k,
+        name = "Years (2000-2021)",
+        marker = list(color = "#8e44ad", size = 8),
+        hovertemplate = "<b>Beds / 100k:</b> %{x:.1f}<br><b>Cancer Deaths / 100k:</b> %{y:.1f}<extra></extra>"
+      ) |>
+      add_lines(
+        x = ~beds_per_100k,
+        y = fitted(fit),
+        name = "Trend",
+        line = list(color = "#2c3e50", dash = "dash")
+      ) |>
+      layout(
+        xaxis = list(title = "Hospital Beds per 100k", showgrid = TRUE, gridcolor = "#e0e0e0"),
+        yaxis = list(title = "Cancer Deaths per 100k", showgrid = TRUE, gridcolor = "#e0e0e0"),
+        plot_bgcolor  = "#fafafa",
+        paper_bgcolor = "#fafafa",
+        showlegend = FALSE
+      )
+  })
+  
   # ==========================================================================
   # TAB 5: Screening Calculator
   # ==========================================================================

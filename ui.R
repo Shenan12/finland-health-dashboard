@@ -299,6 +299,19 @@ ui <- dashboardPage(
             plotlyOutput("cancer_plot", height = "380px")
           )
         ),
+        # NEW ROW: Correlation Analysis
+        fluidRow(
+          box(
+            width = 4, status = "warning",
+            title = "Statistical Link",
+            valueBoxOutput("corr_box", width = 12)
+          ),
+          box(
+            width = 8, status = "warning",
+            title = "Correlation: Beds vs. Cancer Mortality",
+            plotlyOutput("corr_scatter", height = "300px")
+          )
+        ),
         fluidRow(
           box(
             width = 12, status = "info",
