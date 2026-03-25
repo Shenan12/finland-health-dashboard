@@ -62,7 +62,7 @@ ui <- dashboardPage(
     ),
     tags$style(HTML("
   /* Make all value boxes in the Screening tab same height */
-  #screening .value-box {
+  #shiny-tab-screening .small-box {
     min-height: 120px !important;
   }
 ")),
@@ -379,7 +379,9 @@ ui <- dashboardPage(
             fluidRow(
               valueBoxOutput("ppv_result",  width = 3),
               valueBoxOutput("npv_result",  width = 3),
-              valueBoxOutput("prev_result", width = 3),
+              valueBoxOutput("prev_result", width = 3)
+            ),
+            fluidRow(
               valueBoxOutput("lr_pos_box",  width = 3),
               valueBoxOutput("lr_neg_box",  width = 3)
             ),
