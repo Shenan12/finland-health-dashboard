@@ -1,4 +1,4 @@
-## =============================================================================
+# =============================================================================
 # ui.R - Dashboard layout for Finland Health Dashboard
 # =============================================================================
 
@@ -24,21 +24,21 @@ ui <- dashboardPage(
     width = 230,
     sidebarMenu(
       id = "sidebar",
-      menuItem("Home",                  tabName = "home",        icon = icon("house")),
-      menuItem("Theoretical Framework", tabName = "theory",      icon = icon("flask")),
+      menuItem("Home",                  tabName = "home",         icon = icon("house")),
+      menuItem("Theoretical Framework", tabName = "theory",       icon = icon("flask")),
       menuItem("Demographics",          tabName = "demographics", icon = icon("chart-line")),
-      menuItem("Healthcare & Epi",      tabName = "epi",         icon = icon("hospital")),
-      menuItem("Screening Calculator",  tabName = "screening",   icon = icon("calculator"))
+      menuItem("Healthcare & Epidemiology",      tabName = "epi",          icon = icon("hospital")),
+      menuItem("Screening Calculator",  tabName = "screening",    icon = icon("calculator"))
     )
   ),
   
   # -- Body ------------------------------------------------------------------
   dashboardBody(
     
-    # Load MathJax globally so equations render in every tab on page load
+    # 1. Load MathJax globally before any UI elements
     withMathJax(),
     
-    # Custom CSS for polished look
+    # 2. Custom CSS and JavaScript
     tags$head(
       tags$link(rel = "shortcut icon", href = "finland_flag.webp"),
       tags$style(HTML("
@@ -61,24 +61,35 @@ ui <- dashboardPage(
           border-radius: 4px;
           font-size: 0.92em;
         }
+        /* Make all value boxes in the Screening tab same height */
+        #shiny-tab-screening .small-box {
+          min-height: 120px !important;
+        }
+        /* Force subtitle text to wrap instead of bleeding out of the box */
+        .small-box .inner p {
+          white-space: normal !important;
+          word-wrap: break-word;
+        }
       ")),
-      # Re-typeset MathJax when a shinydashboard tab is shown or when
-      # a Shiny output (e.g. renderUI formula) is updated
+      
+      # Bulletproof MathJax listeners with a slight delay to allow UI rendering first
       tags$script(HTML("
-        $(document).on('shown.bs.tab', function() {
-          if (window.MathJax) { MathJax.Hub.Queue(['Typeset', MathJax.Hub]); }
-        });
-        $(document).on('shiny:value', function() {
-          if (window.MathJax) { MathJax.Hub.Queue(['Typeset', MathJax.Hub]); }
+        $(document).ready(function() {
+          // Re-render when switching tabs
+          $(document).on('shown.bs.tab', 'a[data-toggle=\"tab\"]', function (e) {
+            if (window.MathJax) {
+              setTimeout(function() { MathJax.Hub.Queue(['Typeset', MathJax.Hub]); }, 100);
+            }
+          });
+          // Re-render when Shiny updates the dynamic formula in Tab 5
+          $(document).on('shiny:value', function(event) {
+            if (window.MathJax && event.name === 'ppv_formula_display') {
+              setTimeout(function() { MathJax.Hub.Queue(['Typeset', MathJax.Hub]); }, 100);
+            }
+          });
         });
       "))
     ),
-    tags$style(HTML("
-  /* Make all value boxes in the Screening tab same height */
-  #shiny-tab-screening .small-box {
-    min-height: 120px !important;
-  }
-")),
     
     tabItems(
       
@@ -234,9 +245,11 @@ ui <- dashboardPage(
         fluidRow(
           box(
             width = 12, status = "primary", solidHeader = TRUE,
-            title = "Age-Specific Probability of Death - Finland",
+            title = "Age-Specific Probability of Death (Life Table Analysis)",
             p(
-              "Interactive chart of \\( q_x \\) (per mille) by age. ",
+             "Interactive chart of \\( q_x \\) (per mille) by age. ",
+  "These are age-specific mortality probabilities derived from life tables, ",
+  "allowing comparison independent of population structure.",
               "Use the year slider to animate change across ", strong("2000-2024"), ". ",
               "Toggle between males, females, or both using the filter below."
             )
@@ -250,7 +263,6 @@ ui <- dashboardPage(
               min = 2000, max = 2024, value = 2000, step = 1,
               sep = "", animate = animationOptions(interval = 600, loop = FALSE)
             ),
-            # NEW: Age slider for the Risk Box
             sliderInput(
               "demo_age", "Select Age for Risk:",
               min = 0, max = 100, value = 60, step = 1
@@ -273,14 +285,12 @@ ui <- dashboardPage(
             plotlyOutput("demo_plot", height = "450px")
           )
         ),
-        # NEW ROW: The Odds Ratio/Relative Risk Box
         fluidRow(
           valueBoxOutput("risk_box", width = 6)
         ),
-        # NEW ROW: The Population Pyramid
         fluidRow(
           box(
-            width = 12, status = "primary", title = "Stationary Population Structure (Survivors)",
+            width = 12, status = "primary", title = "Stationary Population Structure (Linked to Year Slider Above)", p("This plot updates with the year selected in the mortality chart above."),
             plotlyOutput("pyramid_plot", height = "400px")
           )
         )
@@ -292,7 +302,7 @@ ui <- dashboardPage(
         fluidRow(
           box(
             width = 12, status = "primary", solidHeader = TRUE,
-            title = "Healthcare Capacity & Cancer Burden - Finland",
+            title = "Epidemiological Trends: Healthcare Capacity & Cancer Burden",
             p(
               "Side-by-side comparison of ", strong("hospital bed capacity"),
               " (2000-2023) and ", strong("cancer mortality rates"),
@@ -314,10 +324,10 @@ ui <- dashboardPage(
           box(
             width = 6, status = "danger",
             title = "Cancer Mortality Rate per 100 000 Population",
+            div(style = "height: 74px;"), # Invisible spacer to align perfectly with the trend line dropdown
             plotlyOutput("cancer_plot", height = "380px")
           )
         ),
-        # NEW ROW: Correlation Analysis
         fluidRow(
           box(
             width = 4, status = "warning",
@@ -327,7 +337,15 @@ ui <- dashboardPage(
           box(
             width = 8, status = "warning",
             title = "Correlation: Beds vs. Cancer Mortality",
-            plotlyOutput("corr_scatter", height = "300px")
+            plotlyOutput("corr_scatter", height = "300px"),
+            br(),
+            p(
+              tags$strong("Interpretation: "),
+              "This represents an ecological correlation over time. ",
+              tags$strong("It does not imply causation."),
+              " as both variables may be influenced ",
+              "by underlying factors such as population aging and healthcare improvements."
+            )
           )
         ),
         fluidRow(
@@ -354,6 +372,11 @@ ui <- dashboardPage(
               "Calculate the PPV of a cancer screening test for Finland using Bayes' Theorem. ",
               "The prevalence field is pre-filled with a baseline estimate for Finland. ",
               "Adjust the parameters to evaluate different screening scenarios."
+            ),
+            p(
+              tags$strong("Key Insight: "),
+              "Even highly accurate tests can produce many false positives when disease prevalence is low, ",
+              "highlighting the importance of targeted screening."
             )
           )
         ),
@@ -388,13 +411,13 @@ ui <- dashboardPage(
             width = 8, status = "success",
             title = "Results",
             fluidRow(
-              valueBoxOutput("ppv_result",  width = 3),
-              valueBoxOutput("npv_result",  width = 3),
-              valueBoxOutput("prev_result", width = 3)
+              valueBoxOutput("ppv_result",  width = 4),
+              valueBoxOutput("npv_result",  width = 4),
+              valueBoxOutput("prev_result", width = 4)
             ),
             fluidRow(
-              valueBoxOutput("lr_pos_box",  width = 3),
-              valueBoxOutput("lr_neg_box",  width = 3)
+              valueBoxOutput("lr_pos_box",  width = 6),
+              valueBoxOutput("lr_neg_box",  width = 6)
             ),
             hr(),
             plotlyOutput("ppv_plot", height = "320px"),

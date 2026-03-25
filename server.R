@@ -142,7 +142,7 @@ server <- function(input, output, session) {
     
     valueBox(
       value = HTML(paste0("RR: ", round(rr, 2), " | OR: ", round(or_val, 2))),
-      subtitle = paste("Male vs Female Mortality Risk at Age", input$demo_age),
+      subtitle = paste("Relative Risk & Odds Ratio (Male vs Female) at Age", input$demo_age),
       icon = icon("venus-mars"),
       color = "purple"
     )
