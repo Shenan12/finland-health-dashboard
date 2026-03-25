@@ -142,7 +142,7 @@ server <- function(input, output, session) {
     
     valueBox(
       value = HTML(paste0("RR: ", round(rr, 2), " | OR: ", round(or_val, 2))),
-      subtitle = paste("Male vs Female Mortality Risk at Age", input$demo_age),
+      subtitle = paste("Relative Risk & Odds Ratio (Male vs Female) at Age", input$demo_age),
       icon = icon("venus-mars"),
       color = "purple"
     )
@@ -285,13 +285,18 @@ server <- function(input, output, session) {
     ppv <- tp / (tp + fp)
     npv <- tn / (tn + fn)
     
+    lr_pos <- if (specificity >= 1) Inf else sensitivity / (1 - specificity)
+    lr_neg <- if (sensitivity >= 1) 0   else (1 - sensitivity) / specificity
+    
     list(
-      ppv         = ppv,
-      npv         = npv,
+      ppv = ppv,
+      npv = npv,
       sensitivity = sensitivity,
       specificity = specificity,
-      prevalence  = prevalence,
-      tp = tp, fp = fp, fn = fn, tn = tn
+      prevalence = prevalence,
+      tp = tp, fp = fp, fn = fn, tn = tn,
+      lr_pos = lr_pos,
+      lr_neg = lr_neg
     )
   }, ignoreNULL = FALSE)
   
@@ -324,7 +329,26 @@ server <- function(input, output, session) {
       color    = "blue"
     )
   })
+  output$lr_pos_box <- renderValueBox({
+    res <- ppv_results()
+    lr_display <- if (is.infinite(res$lr_pos)) "\u221e" else round(res$lr_pos, 2)
+    valueBox(
+      value    = lr_display,
+      subtitle = "Likelihood Ratio +",
+      icon     = icon("plus"),
+      color    = "green"
+    )
+  })
   
+  output$lr_neg_box <- renderValueBox({
+    res <- ppv_results()
+    valueBox(
+      value    = round(res$lr_neg, 2),
+      subtitle = "Likelihood Ratio -",
+      icon     = icon("minus"),
+      color    = "red"
+    )
+  })
   output$ppv_plot <- renderPlotly({
     res <- ppv_results()
     
