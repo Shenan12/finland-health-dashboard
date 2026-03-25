@@ -75,3 +75,11 @@ finland_prevalence_prop <- finland_2021_prevalence / 100000
 lt_years     <- sort(unique(life_raw$year))
 lt_ages      <- sort(unique(life_raw$age))
 cancer_years <- sort(unique(cancer_raw$year))
+
+# -- 6. Correlation Data ----------------------------------------------------
+# Joins beds and cancer data by year for the ecological study (2000 to 2021)
+correlation_df <- inner_join(
+  beds_raw |> select(year, beds_per_100k),
+  cancer_raw |> select(year, deaths_per_100k),
+  by = "year"
+)
