@@ -81,6 +81,73 @@ server <- function(input, output, session) {
       )
   })
   
+  # -- Population Pyramid ----------------------------------------------------
+  output$pyramid_plot <- renderPlotly({
+    
+    # Uses the year selected in the existing demo_year input
+    pyramid_data <- life_raw |>
+      filter(year == input$demo_year, sex != "Total") |>
+      mutate(
+        # Males go left (negative), Females go right (positive)
+        display_val = ifelse(sex == "Male", -survivors, survivors)
+      )
+    
+    plot_ly(pyramid_data, x = ~display_val, y = ~age, color = ~sex, colors = c("#2171b5", "#e63946")) |>
+      add_bars(orientation = "h", hoverinfo = "text",
+               text = ~paste("Age:", age, "<br>Survivors:", survivors)) |>
+      layout(
+        title = list(
+          text = paste0("Stationary Population Pyramid (lx) - Year: <b>", input$demo_year, "</b>"),
+          font = list(size = 14)
+        ),
+        barmode = "overlay",
+        xaxis = list(
+          title = "Number of Survivors", 
+          tickvals = seq(-100000, 100000, 25000),
+          ticktext = c("100k", "75k", "50k", "25k", "0", "25k", "50k", "75k", "100k"),
+          showgrid = TRUE, gridcolor = "#e0e0e0"
+        ),
+        yaxis = list(title = "Age (years)", showgrid = TRUE, gridcolor = "#e0e0e0"),
+        legend = list(orientation = "h", x = 0.3, y = -0.15),
+        plot_bgcolor  = "#fafafa",
+        paper_bgcolor = "#fafafa"
+      )
+  })
+  
+  # -- Odds Ratio & Relative Risk Box -----------------------------------------
+  output$risk_box <- renderValueBox({
+    
+    # We will need to add an 'input$demo_age' slider to ui.R next!
+    req(input$demo_age) 
+    
+    risk_data <- life_raw |>
+      filter(year == input$demo_year, age == input$demo_age, sex != "Total")
+    
+    # Extract probabilities for the selected age
+    p_male <- risk_data |> filter(sex == "Male") |> pull(prob_death) / 1000
+    p_female <- risk_data |> filter(sex == "Female") |> pull(prob_death) / 1000
+    
+    # Fallback if data is missing
+    if(length(p_male) == 0 || length(p_female) == 0) {
+      return(valueBox("N/A", "Data missing for this age", icon = icon("exclamation-triangle"), color = "red"))
+    }
+    
+    # 1. Relative Risk calculation
+    rr <- p_male / p_female
+    
+    # 2. Odds Ratio calculation
+    odds_male <- p_male / (1 - p_male)
+    odds_female <- p_female / (1 - p_female)
+    or_val <- odds_male / odds_female
+    
+    valueBox(
+      value = HTML(paste0("RR: ", round(rr, 2), " | OR: ", round(or_val, 2))),
+      subtitle = paste("Male vs Female Mortality Risk at Age", input$demo_age),
+      icon = icon("venus-mars"),
+      color = "purple"
+    )
+  })
+  
   # ==========================================================================
   # TAB 4: Healthcare & Epi
   # ==========================================================================

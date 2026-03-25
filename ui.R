@@ -226,12 +226,16 @@ ui <- dashboardPage(
         ),
         fluidRow(
           box(
-            width = 3, status = "info",
-            title = "Controls",
+            width = 3, status = "info", title = "Controls",
             sliderInput(
               "demo_year", "Select Year:",
               min = 2000, max = 2024, value = 2000, step = 1,
               sep = "", animate = animationOptions(interval = 600, loop = FALSE)
+            ),
+            # NEW: Age slider for the Risk Box
+            sliderInput(
+              "demo_age", "Select Age for Risk:",
+              min = 0, max = 100, value = 60, step = 1
             ),
             radioButtons(
               "demo_sex", "Sex:",
@@ -242,14 +246,24 @@ ui <- dashboardPage(
             checkboxInput("demo_log", "Log-scale Y-axis", value = FALSE),
             hr(),
             helpText(
-              "Click the play button (\u25B6) on the slider to animate mortality ",
+              "Click the play button (\u25B6) on the year slider to animate mortality ",
               "improvement over time."
             )
           ),
           box(
-            width = 9, status = "primary",
-            title = "q\u2093 by Age",
+            width = 9, status = "primary", title = "q\u2093 by Age",
             plotlyOutput("demo_plot", height = "450px")
+          )
+        ),
+        # NEW ROW: The Odds Ratio/Relative Risk Box
+        fluidRow(
+          valueBoxOutput("risk_box", width = 6)
+        ),
+        # NEW ROW: The Population Pyramid
+        fluidRow(
+          box(
+            width = 12, status = "primary", title = "Stationary Population Structure (Survivors)",
+            plotlyOutput("pyramid_plot", height = "400px")
           )
         )
       ),

@@ -14,12 +14,19 @@ library(DT)
 # -- 1. Life Tables ---------------------------------------------------------
 life_raw <- read_csv(
   file.path("data", "life_tables.csv"),
-  skip = 2,  # Skips the title lines in the StatFin raw file
+  skip = 2,  
   show_col_types = FALSE
 ) |>
   clean_names() |>
-  rename(prob_death = probability_of_death_per_mille) |>
+  rename(
+    prob_death = probability_of_death_per_mille,
+    survivors = survivors_of_100_000_born_alive  
+  ) |>
   mutate(
+    # NEW FIX: Force R to treat these columns as numbers, not text
+    prob_death = as.numeric(prob_death),
+    survivors  = as.numeric(survivors),
+    
     # Changes "Males" / "Females" to match standard demographic labels
     sex = case_when(
       sex == "Males" ~ "Male",
@@ -30,7 +37,6 @@ life_raw <- read_csv(
     year = as.integer(year),
     sex  = factor(sex, levels = c("Male", "Female", "Total"))
   )
-
 # -- 2. Hospital Beds --------------------------------------------------------
 beds_raw <- read_csv(
   file.path("data", "beds.csv"),
