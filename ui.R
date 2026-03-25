@@ -24,11 +24,12 @@ ui <- dashboardPage(
     width = 230,
     sidebarMenu(
       id = "sidebar",
-      menuItem("Home",                  tabName = "home",         icon = icon("house")),
-      menuItem("Theoretical Framework", tabName = "theory",       icon = icon("flask")),
-      menuItem("Demographics",          tabName = "demographics", icon = icon("chart-line")),
-      menuItem("Healthcare & Epidemiology",      tabName = "epi",          icon = icon("hospital")),
-      menuItem("Screening Calculator",  tabName = "screening",    icon = icon("calculator"))
+      menuItem("Home",                    tabName = "home",         icon = icon("house")),
+      menuItem("Theoretical Framework",   tabName = "theory",       icon = icon("flask")),
+      menuItem("Demographics",            tabName = "demographics", icon = icon("chart-line")),
+      menuItem("Healthcare & Epidemiology", tabName = "epi",        icon = icon("hospital")),
+      menuItem("Mortality Analysis",      tabName = "mortality",    icon = icon("heartbeat")),
+      menuItem("Screening Calculator",    tabName = "screening",    icon = icon("calculator"))
     )
   ),
   
@@ -42,34 +43,86 @@ ui <- dashboardPage(
     tags$head(
       tags$link(rel = "shortcut icon", href = "finland_flag.webp"),
       tags$style(HTML("
-        .content-wrapper, .right-side { background-color: #f4f6f9; }
-        .box { border-top: 3px solid #3c8dbc; }
+        /* ---- Modern base ---- */
+        .content-wrapper, .right-side {
+          background-color: #f8f9fa;
+        }
+        .skin-blue .main-header .logo,
+        .skin-blue .main-header .navbar {
+          background-color: #1a3a5c;
+        }
+        .skin-blue .main-sidebar {
+          background-color: #1e2d3d;
+        }
+        .skin-blue .sidebar-menu > li.active > a,
+        .skin-blue .sidebar-menu > li:hover > a {
+          background-color: #2c4a6e;
+          border-left-color: #4fa3e0;
+        }
+        /* ---- Boxes ---- */
+        .box {
+          border-top: 3px solid #3c8dbc;
+          border-radius: 10px;
+          box-shadow: 0 2px 8px rgba(0,0,0,.08);
+        }
+        .box.box-primary  { border-top-color: #3c8dbc; }
+        .box.box-success  { border-top-color: #00a65a; }
+        .box.box-danger   { border-top-color: #dd4b39; }
+        .box.box-warning  { border-top-color: #f39c12; }
+        .box.box-info     { border-top-color: #00c0ef; }
+        .box-header .box-title { font-size: 1.05em; font-weight: 600; }
+        /* ---- Value / info boxes ---- */
+        .small-box { border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+        .info-box  { border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.08); }
         .info-box-icon { font-size: 2em; }
+        /* Equal-height value boxes */
+        #shiny-tab-screening .small-box,
+        #shiny-tab-mortality  .small-box { min-height: 120px !important; }
+        /* Subtitle wrapping */
+        .small-box .inner p { white-space: normal !important; word-wrap: break-word; }
+        /* ---- Section sub-headers ---- */
+        .section-header {
+          font-size: 1.1em;
+          font-weight: 700;
+          color: #1a3a5c;
+          margin: 18px 0 10px 0;
+          padding-bottom: 5px;
+          border-bottom: 2px solid #dee2e6;
+        }
+        /* ---- Equation / citation boxes ---- */
         .equation-box {
           background: #fff;
           border-left: 4px solid #3c8dbc;
           padding: 18px 24px;
           margin-bottom: 20px;
-          border-radius: 4px;
-          box-shadow: 0 1px 4px rgba(0,0,0,.1);
+          border-radius: 8px;
+          box-shadow: 0 1px 4px rgba(0,0,0,.07);
         }
         .citation-box {
           background: #eaf4fb;
           border-left: 4px solid #1a6496;
           padding: 12px 18px;
           margin-top: 16px;
-          border-radius: 4px;
+          border-radius: 8px;
           font-size: 0.92em;
         }
-        /* Make all value boxes in the Screening tab same height */
-        #shiny-tab-screening .small-box {
-          min-height: 120px !important;
+        /* ---- Interpretation text ---- */
+        .interp-text {
+          background: #f0f4f8;
+          border-left: 3px solid #6c8ebf;
+          padding: 8px 14px;
+          margin-top: 10px;
+          border-radius: 6px;
+          font-size: 0.88em;
+          color: #3a4a5c;
         }
-        /* Force subtitle text to wrap instead of bleeding out of the box */
-        .small-box .inner p {
-          white-space: normal !important;
-          word-wrap: break-word;
-        }
+        /* ---- Regression table ---- */
+        .reg-table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+        .reg-table th { background: #1a3a5c; color: #fff; padding: 8px 12px; }
+        .reg-table td { padding: 7px 12px; border-bottom: 1px solid #e0e0e0; }
+        .reg-table tr:hover td { background: #f0f4f8; }
+        /* ---- Responsive spacing ---- */
+        .tab-content > .tab-pane { padding-bottom: 30px; }
       ")),
       
       # Bulletproof MathJax listeners with a slight delay to allow UI rendering first
@@ -107,20 +160,22 @@ ui <- dashboardPage(
               "visualise demographic mortality patterns, hospital bed capacity, cancer ",
               "burden, and to support evidence-based screening decisions."
             ),
-            p("Use the sidebar to navigate the five analytical sections:"),
+            p("Use the sidebar to navigate the six analytical sections:"),
             tags$ul(
               tags$li(tags$strong("Home"), " - project overview and data citations."),
               tags$li(tags$strong("Theoretical Framework"), " - mathematical background."),
               tags$li(tags$strong("Demographics"), " - age-specific probability of death over time."),
-              tags$li(tags$strong("Healthcare & Epi"), " - hospital capacity vs cancer mortality."),
+              tags$li(tags$strong("Healthcare & Epi"), " - hospital capacity vs cancer mortality and multivariate regression."),
+              tags$li(tags$strong("Mortality Analysis"), " - all-cause death rate trends, rate of change, and lag analysis."),
               tags$li(tags$strong("Screening Calculator"), " - Bayesian PPV tool.")
             )
           )
         ),
         fluidRow(
-          infoBox("Life Table Years",   "2000 - 2024", icon = icon("calendar"), color = "blue",  width = 4),
-          infoBox("Hospital Bed Years", "2000 - 2023", icon = icon("bed"),      color = "green", width = 4),
-          infoBox("Cancer Data Years",  "2000 - 2021", icon = icon("ribbon"),   color = "red",   width = 4)
+          infoBox("Life Table Years",   "2000 - 2024", icon = icon("calendar"), color = "blue",  width = 3),
+          infoBox("Hospital Bed Years", "2000 - 2023", icon = icon("bed"),      color = "green", width = 3),
+          infoBox("Cancer Data Years",  "2000 - 2021", icon = icon("ribbon"),   color = "red",   width = 3),
+          infoBox("Death Rate Years",   "2000 - 2024", icon = icon("chart-bar"), color = "purple", width = 3)
         ),
         fluidRow(
           box(
@@ -143,6 +198,12 @@ ui <- dashboardPage(
                     "Our World in Data. ",
                     tags$em("Death rate from cancer."), " ",
                     tags$a("https://ourworldindata.org/grapher/death-rate-from-cancer", href = "https://ourworldindata.org/grapher/death-rate-from-cancer", target = "_blank"),
+                    ". Accessed 2026."
+                  ),
+                  tags$li(
+                    "Statistics Finland. ",
+                    tags$em("Deaths, age-standardised and crude death rates by cause of death and sex, 1971-2024 (table 11ay)."), " ",
+                    tags$a("https://stat.fi/til/ksyyt/index_en.html", href = "https://stat.fi/til/ksyyt/index_en.html", target = "_blank"),
                     ". Accessed 2026."
                   )
                 )
@@ -389,10 +450,200 @@ ui <- dashboardPage(
               tags$li("Mismatched timelines are intentional; each dataset uses its available extent.")
             )
           )
+        ),
+
+        # ---- Advanced Epidemiology ----
+        fluidRow(
+          box(
+            width = 12, status = "primary", solidHeader = TRUE,
+            title = "Advanced Epidemiology: Multivariate Regression & Lag Analysis",
+            p(
+              "Using the merged dataset (2000-2021, inner join of all three sources) to examine ",
+              "relationships between hospital capacity, cancer burden, and overall mortality."
+            )
+          )
+        ),
+
+        # -- Multivariate Regression ----------------------------------------
+        fluidRow(
+          box(
+            width = 6, status = "primary",
+            title = tags$span(icon("chart-line"), " Multivariate Linear Regression"),
+            tags$h4("Model: death_rate ~ beds_per_100k + deaths_per_100k",
+                    class = "section-header"),
+            tableOutput("lm_coef_table"),
+            br(),
+            uiOutput("lm_r2_display"),
+            div(class = "interp-text",
+                tags$strong("Interpretation: "),
+                "The model estimates how much the overall (age-standardised) ",
+                "death rate changes with each unit change in hospital bed capacity ",
+                "and cancer mortality, holding the other variable constant. ",
+                "A negative coefficient for beds suggests more capacity is associated ",
+                "with lower mortality; a positive coefficient for cancer deaths ",
+                "reflects its contribution to overall mortality burden."
+            )
+          ),
+          box(
+            width = 6, status = "primary",
+            title = tags$span(icon("circle"), " Regression Scatter: Beds vs Overall Mortality"),
+            plotlyOutput("reg_scatter", height = "380px"),
+            div(class = "interp-text",
+                tags$strong("Interpretation: "),
+                "Each point represents one year (2000-2021). Colour intensity ",
+                "indicates cancer mortality level. The regression line ",
+                "shows the marginal association between bed capacity and overall death rate."
+            )
+          )
+        ),
+
+        # -- Correlation Matrix ----------------------------------------------
+        fluidRow(
+          box(
+            width = 12, status = "info",
+            title = tags$span(icon("th"), " Correlation Matrix: Beds, Cancer Mortality, Overall Death Rate"),
+            plotlyOutput("corr_heatmap", height = "380px"),
+            div(class = "interp-text",
+                tags$strong("Interpretation: "),
+                "Pearson correlation coefficients (r) between the three key indicators. ",
+                "Values close to \u00b11 indicate a strong linear association. ",
+                "This ecological analysis does not establish causation but highlights ",
+                "co-movement patterns over time."
+            )
+          )
+        ),
+
+        # -- Logistic Regression --------------------------------------------
+        fluidRow(
+          box(
+            width = 6, status = "warning",
+            title = tags$span(icon("percent"), " Logistic Regression: Predictors of High Mortality"),
+            p("Binary outcome: death rate above the historical median (1 = high, 0 = low)."),
+            tableOutput("glm_coef_table"),
+            br(),
+            div(class = "interp-text",
+                tags$strong("Interpretation: "),
+                "Odds ratios (OR) greater than 1 indicate that higher values of the ",
+                "predictor are associated with increased odds of a high-mortality year. ",
+                "An OR < 1 for beds suggests more bed capacity is associated with lower ",
+                "odds of above-median overall mortality."
+            )
+          ),
+          box(
+            width = 6, status = "warning",
+            title = tags$span(icon("sliders-h"), " Predicted Probability of High Mortality"),
+            p("Adjust predictors to see the logistic model's predicted probability."),
+            fluidRow(
+              column(6,
+                sliderInput("glm_beds", "Beds per 100k:",
+                            min = 250, max = 800, value = 450, step = 10)
+              ),
+              column(6,
+                sliderInput("glm_cancer", "Cancer Deaths per 100k:",
+                            min = 180, max = 280, value = 220, step = 2)
+              )
+            ),
+            valueBoxOutput("glm_prob_box", width = 12),
+            div(class = "interp-text",
+                tags$strong("How to read: "),
+                "The predicted probability (0-100%) reflects the logistic model's ",
+                "estimate that a year with these indicator values would have an ",
+                "above-median overall death rate."
+            )
+          )
+        ),
+
+        # -- Lag Analysis ---------------------------------------------------
+        fluidRow(
+          box(
+            width = 12, status = "success",
+            title = tags$span(icon("clock"), " Lag Analysis: Delayed Effect of Hospital Bed Capacity"),
+            p(
+              "Hospital bed investment does not translate immediately into mortality reductions. ",
+              "The plot below examines whether the previous year's bed capacity ",
+              "(", tags$code("beds_lag1"), ") predicts the current year's overall death rate."
+            ),
+            plotlyOutput("lag_plot", height = "380px"),
+            div(class = "interp-text",
+                tags$strong("Interpretation: "),
+                "Each point represents a year from 2001 to 2021. The x-axis shows hospital ",
+                "bed capacity in the preceding year. A downward trend suggests that higher ",
+                "bed capacity one year earlier is associated with a lower death rate the ",
+                "following year — consistent with a delayed healthcare effect hypothesis."
+            )
+          )
+        )
+      ),
+
+      # -- TAB 5: Mortality Analysis ----------------------------------------
+      tabItem(
+        tabName = "mortality",
+        fluidRow(
+          box(
+            width = 12, status = "primary", solidHeader = TRUE,
+            title = "All-Cause Mortality Analysis: Finland 2000-2024",
+            p(
+              "Analysis of Finland's age-standardised all-cause death rate ",
+              "(per 100 000 population) from Statistics Finland. ",
+              "The data covers all sexes combined for the period 2000-2024."
+            )
+          )
+        ),
+
+        # Value boxes
+        fluidRow(
+          valueBoxOutput("mort_latest_box",  width = 4),
+          valueBoxOutput("mort_avg_box",     width = 4),
+          valueBoxOutput("mort_change_box",  width = 4)
+        ),
+
+        # Time series
+        fluidRow(
+          box(
+            width = 12, status = "primary",
+            title = tags$span(icon("chart-line"), " Death Rate Over Time (with LOESS Trend)"),
+            plotlyOutput("mort_ts_plot", height = "400px"),
+            div(class = "interp-text",
+                tags$strong("Interpretation: "),
+                "Finland's age-standardised death rate has generally declined since 2000, ",
+                "reflecting improvements in healthcare, lifestyle, and public health policy. ",
+                "The dashed LOESS curve highlights the long-term downward trend.",
+                " A sharp uptick is visible around 2022, likely related to excess ",
+                "COVID-19 mortality."
+            )
+          )
+        ),
+
+        # Comparative plot + rate of change
+        fluidRow(
+          box(
+            width = 6, status = "danger",
+            title = tags$span(icon("balance-scale"), " Overall vs Cancer Mortality (2000-2021)"),
+            plotlyOutput("mort_compare_plot", height = "380px"),
+            div(class = "interp-text",
+                tags$strong("Interpretation: "),
+                "Both series are normalised to their 2000 baseline (index = 100) to allow ",
+                "direct comparison of relative decline. Cancer mortality has declined ",
+                "faster than all-cause mortality, indicating broad improvements across ",
+                "multiple disease categories."
+            )
+          ),
+          box(
+            width = 6, status = "warning",
+            title = tags$span(icon("exchange-alt"), " Year-on-Year % Change in Death Rate"),
+            plotlyOutput("mort_roc_plot", height = "380px"),
+            div(class = "interp-text",
+                tags$strong("Interpretation: "),
+                "Positive values indicate years where mortality increased relative to the ",
+                "previous year; negative values indicate improvement. ",
+                "Large positive spikes may correspond to severe influenza seasons, ",
+                "cold winters, or pandemic years."
+            )
+          )
         )
       ),
       
-      # -- TAB 5: Screening Calculator --------------------------------------
+      # -- TAB 6: Screening Calculator --------------------------------------
       tabItem(
         tabName = "screening",
         fluidRow(

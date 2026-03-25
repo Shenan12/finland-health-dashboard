@@ -410,4 +410,333 @@ server <- function(input, output, session) {
       )
     )
   })
+
+  # ==========================================================================
+  # TAB 4 EXTENSION: Multivariate Regression, Correlation Matrix, Logistic,
+  #                  Lag Analysis
+  # ==========================================================================
+
+  # -- Multivariate Linear Regression coefficient table ----------------------
+  output$lm_coef_table <- renderTable({
+    s  <- summary(lm_model)
+    cf <- as.data.frame(s$coefficients)
+    cf$Term <- rownames(cf)
+    cf <- cf[, c("Term", "Estimate", "Std. Error", "t value", "Pr(>|t|)")]
+    colnames(cf) <- c("Term", "Estimate", "Std. Error", "t-value", "p-value")
+    cf$Estimate    <- round(cf$Estimate,    3)
+    cf$`Std. Error` <- round(cf$`Std. Error`, 3)
+    cf$`t-value`   <- round(cf$`t-value`,   3)
+    cf$`p-value`   <- signif(cf$`p-value`,  3)
+    cf
+  }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%")
+
+  output$lm_r2_display <- renderUI({
+    s     <- summary(lm_model)
+    r2    <- round(s$r.squared,    3)
+    r2adj <- round(s$adj.r.squared, 3)
+    f_val <- s$fstatistic
+    f_stat <- f_val[1]; df1 <- f_val[2]; df2 <- f_val[3]
+    p_f   <- signif(pf(f_stat, df1, df2, lower.tail = FALSE), 3)
+    div(
+      class = "equation-box",
+      tags$strong(paste0("R\u00b2 = ", r2,
+                         "  |  Adjusted R\u00b2 = ", r2adj,
+                         "  |  Overall p-value = ", p_f))
+    )
+  })
+
+  # -- Regression scatter: beds vs death_rate, colour = cancer deaths --------
+  output$reg_scatter <- renderPlotly({
+    df  <- health_df
+    fit <- lm(death_rate ~ beds_per_100k, data = df)
+    x_seq <- seq(min(df$beds_per_100k), max(df$beds_per_100k), length.out = 100)
+    y_fit <- predict(fit, newdata = data.frame(beds_per_100k = x_seq))
+
+    plot_ly(df, x = ~beds_per_100k) |>
+      add_markers(
+        y             = ~death_rate,
+        color         = ~deaths_per_100k,
+        colors        = c("#fee8c8", "#c0392b"),
+        text          = ~paste0("Year: ", year,
+                                "<br>Beds/100k: ", round(beds_per_100k, 1),
+                                "<br>Death rate: ", round(death_rate, 1),
+                                "<br>Cancer deaths/100k: ", round(deaths_per_100k, 1)),
+        hoverinfo     = "text",
+        marker        = list(size = 10, opacity = 0.85),
+        showlegend    = TRUE,
+        name          = "Years (colour = cancer mortality)"
+      ) |>
+      add_lines(
+        x    = x_seq,
+        y    = y_fit,
+        line = list(color = "#2c3e50", dash = "dash", width = 2),
+        name = "Regression line",
+        hoverinfo = "skip"
+      ) |>
+      layout(
+        xaxis = list(title = "Hospital Beds per 100k",
+                     showgrid = TRUE, gridcolor = "#e0e0e0"),
+        yaxis = list(title = "Overall Death Rate per 100k",
+                     showgrid = TRUE, gridcolor = "#e0e0e0"),
+        coloraxis = list(colorbar = list(title = "Cancer<br>Deaths/100k")),
+        plot_bgcolor  = "#fafafa",
+        paper_bgcolor = "#fafafa",
+        legend = list(orientation = "h", y = -0.2)
+      )
+  })
+
+  # -- Correlation heatmap ---------------------------------------------------
+  output$corr_heatmap <- renderPlotly({
+    mat_df <- health_df[, c("beds_per_100k", "deaths_per_100k", "death_rate")]
+    mat    <- cor(mat_df, use = "complete.obs")
+    labels <- c("Beds /100k", "Cancer Deaths /100k", "Overall Death Rate /100k")
+    rownames(mat) <- colnames(mat) <- labels
+
+    # Build annotation text
+    ann_text <- round(mat, 3)
+
+    plot_ly(
+      x = labels, y = labels,
+      z = mat,
+      type        = "heatmap",
+      colorscale  = list(c(0, "#d73027"), c(0.5, "#f7f7f7"), c(1, "#1a6496")),
+      zmin = -1, zmax = 1,
+      text         = ann_text,
+      texttemplate = "%{text}",
+      hovertemplate = "r = %{z:.3f}<extra></extra>"
+    ) |>
+      layout(
+        title  = list(text = "Pearson Correlation Matrix", font = list(size = 13)),
+        xaxis  = list(title = "", tickangle = -20),
+        yaxis  = list(title = ""),
+        plot_bgcolor  = "#fafafa",
+        paper_bgcolor = "#fafafa"
+      )
+  })
+
+  # -- Logistic Regression coefficient table ---------------------------------
+  output$glm_coef_table <- renderTable({
+    s  <- summary(glm_model)
+    cf <- as.data.frame(s$coefficients)
+    cf$Term <- rownames(cf)
+    cf$OR   <- round(exp(coef(glm_model)), 3)
+    cf <- cf[, c("Term", "Estimate", "Std. Error", "z value", "Pr(>|z|)", "OR")]
+    colnames(cf) <- c("Term", "Log-Odds", "Std. Error", "z-value", "p-value", "Odds Ratio")
+    cf$`Log-Odds`  <- round(cf$`Log-Odds`,  3)
+    cf$`Std. Error` <- round(cf$`Std. Error`, 3)
+    cf$`z-value`   <- round(cf$`z-value`,   3)
+    cf$`p-value`   <- signif(cf$`p-value`,  3)
+    cf
+  }, striped = TRUE, hover = TRUE, bordered = TRUE, width = "100%")
+
+  # -- Logistic predicted probability value box -----------------------------
+  output$glm_prob_box <- renderValueBox({
+    new_data <- data.frame(
+      beds_per_100k   = input$glm_beds,
+      deaths_per_100k = input$glm_cancer
+    )
+    prob <- predict(glm_model, newdata = new_data, type = "response")
+    prob_pct <- round(prob * 100, 1)
+    valueBox(
+      value    = paste0(prob_pct, "%"),
+      subtitle = "Predicted Probability of High Mortality Year",
+      icon     = icon("percent"),
+      color    = if (prob >= 0.5) "red" else "green"
+    )
+  })
+
+  # -- Lag plot: beds_lag1 vs death_rate ------------------------------------
+  output$lag_plot <- renderPlotly({
+    df  <- health_df |> filter(!is.na(beds_lag1))
+    fit <- lm(death_rate ~ beds_lag1, data = df)
+    x_seq <- seq(min(df$beds_lag1), max(df$beds_lag1), length.out = 100)
+    y_fit <- predict(fit, newdata = data.frame(beds_lag1 = x_seq))
+
+    plot_ly(df, x = ~beds_lag1) |>
+      add_markers(
+        y             = ~death_rate,
+        marker        = list(color = "#2c3e50", size = 9, opacity = 0.8),
+        text          = ~paste0("Year: ", year,
+                                "<br>Beds (prev year): ", round(beds_lag1, 1),
+                                "<br>Death rate: ", round(death_rate, 1)),
+        hoverinfo     = "text",
+        name          = "Year observations"
+      ) |>
+      add_lines(
+        x    = x_seq,
+        y    = y_fit,
+        line = list(color = "#e74c3c", dash = "dash", width = 2),
+        name = "Lag-1 regression",
+        hoverinfo = "skip"
+      ) |>
+      layout(
+        xaxis = list(title = "Hospital Beds per 100k (previous year)",
+                     showgrid = TRUE, gridcolor = "#e0e0e0"),
+        yaxis = list(title = "Overall Death Rate per 100k (current year)",
+                     showgrid = TRUE, gridcolor = "#e0e0e0"),
+        plot_bgcolor  = "#fafafa",
+        paper_bgcolor = "#fafafa",
+        legend = list(orientation = "h", y = -0.2)
+      )
+  })
+
+  # ==========================================================================
+  # TAB 5: Mortality Analysis
+  # ==========================================================================
+
+  # -- Value boxes -----------------------------------------------------------
+  output$mort_latest_box <- renderValueBox({
+    latest <- death_raw |> filter(year == max(year))
+    valueBox(
+      value    = paste0(round(latest$death_rate, 1), " / 100k"),
+      subtitle = paste("Latest Death Rate (", latest$year, ")"),
+      icon     = icon("heartbeat"),
+      color    = "red"
+    )
+  })
+
+  output$mort_avg_box <- renderValueBox({
+    avg_rate <- mean(death_raw$death_rate, na.rm = TRUE)
+    valueBox(
+      value    = paste0(round(avg_rate, 1), " / 100k"),
+      subtitle = "Average Death Rate (2000-2024)",
+      icon     = icon("calculator"),
+      color    = "blue"
+    )
+  })
+
+  output$mort_change_box <- renderValueBox({
+    sorted <- death_raw |> arrange(year)
+    n      <- nrow(sorted)
+    if (n >= 2) {
+      last_rate <- sorted$death_rate[n]
+      prev_rate <- sorted$death_rate[n - 1]
+      pct_chg   <- round((last_rate - prev_rate) / prev_rate * 100, 2)
+      color_val <- if (pct_chg > 0) "yellow" else "green"
+      icon_val  <- if (pct_chg > 0) icon("arrow-up") else icon("arrow-down")
+      valueBox(
+        value    = paste0(ifelse(pct_chg > 0, "+", ""), pct_chg, "%"),
+        subtitle = paste0("Change vs Previous Year (",
+                          sorted$year[n - 1], "\u2192", sorted$year[n], ")"),
+        icon     = icon_val,
+        color    = color_val
+      )
+    } else {
+      valueBox("N/A", "Insufficient data", icon = icon("question"), color = "gray")
+    }
+  })
+
+  # -- Time series with LOESS ------------------------------------------------
+  output$mort_ts_plot <- renderPlotly({
+    df   <- death_raw |> arrange(year)
+    lo   <- loess(death_rate ~ year, data = df, span = 0.5)
+    yfit <- predict(lo, newdata = df)
+
+    plot_ly(df, x = ~year) |>
+      add_trace(
+        y             = ~death_rate,
+        type          = "scatter",
+        mode          = "lines+markers",
+        name          = "Death Rate",
+        line          = list(color = "#2c3e50", width = 2),
+        marker        = list(color = "#2c3e50", size = 6),
+        hovertemplate = "<b>Year:</b> %{x}<br><b>Death Rate / 100k:</b> %{y:.1f}<extra></extra>"
+      ) |>
+      add_trace(
+        y         = yfit,
+        type      = "scatter",
+        mode      = "lines",
+        name      = "LOESS Trend",
+        line      = list(color = "#e74c3c", width = 2.5, dash = "dash"),
+        hoverinfo = "skip"
+      ) |>
+      layout(
+        xaxis = list(title = "Year", showgrid = TRUE, gridcolor = "#e0e0e0",
+                     dtick = 2, tickformat = "d"),
+        yaxis = list(title = "Age-standardised death rate per 100k",
+                     showgrid = TRUE, gridcolor = "#e0e0e0"),
+        legend = list(orientation = "h", x = 0.3, y = -0.15),
+        plot_bgcolor  = "#fafafa",
+        paper_bgcolor = "#fafafa"
+      )
+  })
+
+  # -- Comparative plot: normalised overall vs cancer mortality --------------
+  output$mort_compare_plot <- renderPlotly({
+    # Restrict to overlapping years with cancer data
+    df <- health_df |> arrange(year)
+    base_death  <- df$death_rate[1]
+    base_cancer <- df$deaths_per_100k[1]
+    df <- df |>
+      mutate(
+        idx_death  = death_rate / base_death * 100,
+        idx_cancer = deaths_per_100k / base_cancer * 100
+      )
+
+    plot_ly(df, x = ~year) |>
+      add_trace(
+        y             = ~idx_death,
+        type          = "scatter",
+        mode          = "lines+markers",
+        name          = "Overall Death Rate",
+        line          = list(color = "#2c3e50", width = 2),
+        marker        = list(color = "#2c3e50", size = 6),
+        hovertemplate = "<b>Year:</b> %{x}<br><b>Index:</b> %{y:.1f}<extra>Overall</extra>"
+      ) |>
+      add_trace(
+        y             = ~idx_cancer,
+        type          = "scatter",
+        mode          = "lines+markers",
+        name          = "Cancer Mortality",
+        line          = list(color = "#c0392b", width = 2),
+        marker        = list(color = "#c0392b", size = 6),
+        hovertemplate = "<b>Year:</b> %{x}<br><b>Index:</b> %{y:.1f}<extra>Cancer</extra>"
+      ) |>
+      add_segments(
+        x = min(df$year), xend = max(df$year),
+        y = 100, yend = 100,
+        line = list(color = "#aaaaaa", dash = "dot", width = 1),
+        name = "Baseline (2000 = 100)",
+        hoverinfo = "skip"
+      ) |>
+      layout(
+        xaxis = list(title = "Year", showgrid = TRUE, gridcolor = "#e0e0e0",
+                     dtick = 2, tickformat = "d"),
+        yaxis = list(title = "Index (Year 2000 = 100)",
+                     showgrid = TRUE, gridcolor = "#e0e0e0"),
+        legend = list(orientation = "h", x = 0.1, y = -0.2),
+        plot_bgcolor  = "#fafafa",
+        paper_bgcolor = "#fafafa"
+      )
+  })
+
+  # -- Rate of change (YoY % change) -----------------------------------------
+  output$mort_roc_plot <- renderPlotly({
+    df <- death_raw |>
+      arrange(year) |>
+      mutate(
+        pct_change = (death_rate - lag(death_rate)) / lag(death_rate) * 100
+      ) |>
+      filter(!is.na(pct_change))
+
+    bar_colors <- ifelse(df$pct_change >= 0, "#e74c3c", "#27ae60")
+
+    plot_ly(df,
+            x    = ~year,
+            y    = ~pct_change,
+            type = "bar",
+            marker = list(color = bar_colors),
+            text  = ~paste0(round(pct_change, 2), "%"),
+            hovertemplate = "<b>Year:</b> %{x}<br><b>Change:</b> %{y:.2f}%<extra></extra>"
+    ) |>
+      layout(
+        xaxis = list(title = "Year", showgrid = FALSE,
+                     dtick = 2, tickformat = "d"),
+        yaxis = list(title = "Year-on-Year % Change",
+                     showgrid = TRUE, gridcolor = "#e0e0e0",
+                     zeroline = TRUE, zerolinecolor = "#888"),
+        plot_bgcolor  = "#fafafa",
+        paper_bgcolor = "#fafafa"
+      )
+  })
 }

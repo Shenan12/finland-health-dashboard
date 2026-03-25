@@ -65,21 +65,77 @@ cancer_raw <- read_csv(
 max_cancer_year <- max(cancer_raw$year, na.rm = TRUE)
 max_beds_year   <- max(beds_raw$year, na.rm = TRUE)
 
-# -- 4. Pre-compute Baseline Prevalence --------------------------------------
-# A baseline prevalence estimate (per 100k) is required to initialize 
-# the Bayesian PPV calculator on startup.
+# -- 4. Death Rate (Statistics Finland) -------------------------------------
+# Source: Statistics Finland 11ay – all-cause age-standardised death rate,
+# total sex, "00-54 Total" (whole population), 1971-2024.
+death_raw <- read_csv(
+  file.path("data", "DeathRate.csv"),
+  skip = 2,
+  show_col_types = FALSE
+) |>
+  clean_names() |>
+  filter(
+    sex == "Total",
+    underlying_cause_of_death_time_series_classification == "00-54 Total"
+  ) |>
+  select(
+    year,
+    death_rate = age_standardised_death_rate_whole_population_1_100_000
+  ) |>
+  mutate(
+    year       = as.integer(year),
+    death_rate = as.numeric(death_rate)
+  ) |>
+  filter(year >= 2000) |>
+  na.omit()
+
+death_years <- sort(unique(death_raw$year))
+
+# -- 5. Merged analytical dataset -------------------------------------------
+# Inner join limits to years covered by ALL three sources (2000-2021).
+health_df <- beds_raw |>
+  select(year, beds_per_100k) |>
+  inner_join(cancer_raw |> select(year, deaths_per_100k), by = "year") |>
+  inner_join(death_raw  |> select(year, death_rate),      by = "year") |>
+  na.omit() |>
+  arrange(year) |>
+  mutate(
+    # Binary outcome: 1 if death rate above median, 0 otherwise
+    high_mortality = as.integer(death_rate > median(death_rate)),
+    # One-year lag of hospital beds to capture delayed healthcare effects
+    beds_lag1      = lag(beds_per_100k, 1)
+  )
+
+# -- 6. Pre-compute Baseline Prevalence --------------------------------------
+# A baseline prevalence estimate (per 100k) for Finland, based on cancer
+# incidence data circa 2021. Required to initialise the Bayesian PPV calculator.
+# Source: Finnish Cancer Registry / Our World in Data cancer prevalence estimates.
 finland_2021_prevalence <- 3168
 finland_prevalence_prop <- finland_2021_prevalence / 100000
 
-# -- 5. Year ranges ---------------------------------------------------------
+# -- 7. Year ranges ---------------------------------------------------------
 lt_years     <- sort(unique(life_raw$year))
 lt_ages      <- sort(unique(life_raw$age))
 cancer_years <- sort(unique(cancer_raw$year))
 
-# -- 6. Correlation Data ----------------------------------------------------
+# -- 8. Correlation Data (beds vs cancer, for existing Epi tab) -------------
 # Joins beds and cancer data by year for the ecological study (2000 to 2021)
 correlation_df <- inner_join(
   beds_raw |> select(year, beds_per_100k),
   cancer_raw |> select(year, deaths_per_100k),
   by = "year"
+)
+
+# -- 9. Pre-fit Statistical Models (global, for performance) ----------------
+
+# Multivariate linear regression: overall death rate ~ beds + cancer deaths
+lm_model <- lm(death_rate ~ beds_per_100k + deaths_per_100k, data = health_df)
+
+# Logistic regression: high mortality (binary) ~ beds + cancer deaths
+# Use complete cases only (excluding first row which has NA beds_lag1)
+health_df_complete <- health_df |> filter(!is.na(beds_lag1))
+glm_model <- glm(
+  high_mortality ~ beds_per_100k + deaths_per_100k,
+  data   = health_df_complete,
+  family = binomial
 )
