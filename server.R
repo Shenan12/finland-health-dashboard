@@ -285,8 +285,8 @@ server <- function(input, output, session) {
     ppv <- tp / (tp + fp)
     npv <- tn / (tn + fn)
     
-    lr_pos <- sensitivity / (1 - specificity)
-    lr_neg <- (1 - sensitivity) / specificity
+    lr_pos <- if (specificity >= 1) Inf else sensitivity / (1 - specificity)
+    lr_neg <- if (sensitivity >= 1) 0   else (1 - sensitivity) / specificity
     
     list(
       ppv = ppv,
@@ -331,21 +331,22 @@ server <- function(input, output, session) {
   })
   output$lr_pos_box <- renderValueBox({
     res <- ppv_results()
+    lr_display <- if (is.infinite(res$lr_pos)) "\u221e" else round(res$lr_pos, 2)
     valueBox(
-      value = round(res$lr_pos, 2),
+      value    = lr_display,
       subtitle = "Likelihood Ratio +",
-      icon = icon("plus"),
-      color = "green"
+      icon     = icon("plus"),
+      color    = "green"
     )
   })
   
   output$lr_neg_box <- renderValueBox({
     res <- ppv_results()
     valueBox(
-      value = round(res$lr_neg, 2),
+      value    = round(res$lr_neg, 2),
       subtitle = "Likelihood Ratio -",
-      icon = icon("minus"),
-      color = "red"
+      icon     = icon("minus"),
+      color    = "red"
     )
   })
   output$ppv_plot <- renderPlotly({
