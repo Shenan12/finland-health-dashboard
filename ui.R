@@ -165,56 +165,55 @@ ui <- dashboardPage(
           )
         ),
         fluidRow(
+          # --- Life Table / qx
           box(
             width = 6, status = "info",
-            title = "1. Probability of Death (Life Table)",
+            title = "1. Age-specific Probability of Death \\( q_x \\)",
             div(
               class = "equation-box",
-              p(tags$strong("Definition of \\( q_x \\)")),
+              p(tags$strong("Definition:")),
               p(
-                "The age-specific probability of death \\( q_x \\) represents the ",
-                "probability that an individual aged exactly \\( x \\) will die before ",
-                "reaching age \\( x+1 \\)."
+                "The age-specific probability of death \\( q_x \\) represents the probability that an individual aged exactly \\( x \\) will die before reaching age \\( x+1 \\)."
               ),
+              p("Formula:"),
               p("$$q_x = \\frac{d_x}{l_x}$$"),
               tags$ul(
                 tags$li("\\( d_x \\) - number of deaths between ages \\( x \\) and \\( x+1 \\)"),
-                tags$li("\\( l_x \\) - number of survivors reaching exact age \\( x \\) (radix = 100 000)")
+                tags$li("\\( l_x \\) - number of survivors reaching age \\( x \\) (radix = 100,000)")
               ),
-              p("In the force-of-mortality formulation:"),
-              p("$$q_x = 1 - e^{-\\int_x^{x+1} \\mu(t)\\, dt} \\approx 1 - e^{-\\mu_x}$$"),
-              p(
-                "where \\( \\mu_x \\) is the hazard rate (force of mortality) at age \\( x \\). ",
-                "Values in this dashboard are expressed as deaths per 1 000 (per mille)."
-              )
+              p("Force-of-mortality approximation:"),
+              p("$$q_x \\approx 1 - e^{-\\mu_x}$$"),
+              p("where \\( \\mu_x \\) is the hazard rate (force of mortality) at age \\( x \\).")
             )
           ),
+          
+          # --- Screening / PPV
           box(
             width = 6, status = "success",
-            title = "2. Positive Predictive Value (PPV)",
+            title = "2. Bayesian Screening Metrics",
             div(
               class = "equation-box",
-              p(tags$strong("Bayes' Theorem applied to screening")),
+              p(tags$strong("Positive Predictive Value (PPV)")),
               p(
-                "The Positive Predictive Value (PPV) is the probability that a ",
-                "positive screening test truly indicates disease. It depends on test ",
-                "performance ", em("and"), " disease prevalence."
+                "PPV quantifies the probability that a positive test result correctly identifies disease. ",
+                "It depends on test characteristics and disease prevalence."
               ),
+              p("Formula:"),
               p("$$\\text{PPV} = \\frac{\\text{Sensitivity} \\times \\text{Prevalence}}{\\text{Sensitivity} \\times \\text{Prevalence} + (1 - \\text{Specificity}) \\times (1 - \\text{Prevalence})}$$"),
-              p("Equivalently, using Bayes' theorem:"),
-              p("$$P(D^+ | T^+) = \\frac{P(T^+ | D^+)\\, P(D^+)}{P(T^+)}$$"),
+              p("Complementary metric - Negative Predictive Value (NPV):"),
+              p("$$\\text{NPV} = \\frac{\\text{Specificity} \\times (1 - \\text{Prevalence})}{\\text{Specificity} \\times (1 - \\text{Prevalence}) + (1 - \\text{Sensitivity}) \\times \\text{Prevalence}}$$"),
               tags$ul(
-                tags$li("\\( P(T^+|D^+) \\) - sensitivity (true positive rate)"),
-                tags$li("\\( P(D^+) \\) - prevalence (prior probability of disease)"),
-                tags$li("\\( P(T^+) \\) - marginal probability of a positive test")
+                tags$li("\\( P(T^+|D^+) \\) - sensitivity"),
+                tags$li("\\( P(T^-|D^-) \\) - specificity"),
+                tags$li("\\( P(D^+) \\) - disease prevalence")
               ),
               p(
-                "A high sensitivity alone is insufficient; low prevalence can still yield ",
-                "a low PPV-highlighting the importance of targeted screening programmes."
+                "These metrics are essential for evaluating the effectiveness of screening programs, especially when disease prevalence is low."
               )
             )
           )
         ),
+        # --- Gompertz-Makeham Mortality Model
         fluidRow(
           box(
             width = 12, status = "warning",
@@ -222,17 +221,49 @@ ui <- dashboardPage(
             div(
               class = "equation-box",
               p(
-                "The Gompertz-Makeham law describes the exponential increase of mortality ",
-                "with age and is widely used in actuarial and demographic studies:"
+                "The Gompertz-Makeham law models the exponential rise of mortality with age, separating age-independent and age-dependent hazards:"
               ),
-              p("$$\\mu(x) = A + B \\cdot e^{\\,cx}$$"),
+              p("$$\\mu(x) = A + B e^{c x}$$"),
               tags$ul(
-                tags$li("\\( A \\) - age-independent background hazard (accidents, infections)"),
-                tags$li("\\( B, c \\) - parameters governing the age-related exponential rise")
+                tags$li("\\( A \\) - background hazard (age-independent)"),
+                tags$li("\\( B, c \\) - parameters governing age-dependent mortality")
               ),
+              p("Estimates for Finland suggest \\( c \\approx 0.09 \\) for both sexes.")
+            )
+          )
+        ),
+        # --- Odds Ratio & Relative Risk
+        fluidRow(
+          box(
+            width = 6, status = "primary",
+            title = "4. Odds Ratio (OR) & Relative Risk (RR)",
+            div(
+              class = "equation-box",
               p(
-                "For Finland, estimates suggest \\( c \\approx 0.09 \\) for both sexes, ",
-                "consistent with other Nordic populations."
+                "These metrics compare mortality between males and females at a given age."
+              ),
+              p("Relative Risk (RR):"),
+              p("$$RR = \\frac{P_{male}}{P_{female}}$$"),
+              p("Odds Ratio (OR):"),
+              p("$$OR = \\frac{P_{male} / (1-P_{male})}{P_{female} / (1-P_{female})}$$"),
+              p(
+                "Where \\( P_{male} \\) and \\( P_{female} \\) are the probabilities of death for males and females respectively. ",
+                "These provide insight into sex-specific risk differences."
+              )
+            )
+          ),
+          # --- Pearson Correlation
+          box(
+            width = 6, status = "primary",
+            title = "5. Correlation Analysis",
+            div(
+              class = "equation-box",
+              p(
+                "To examine the association between healthcare capacity and cancer mortality, we compute the Pearson correlation coefficient:"
+              ),
+              p("$$r = \\frac{\\sum (x_i - \\bar{x})(y_i - \\bar{y})}{\\sqrt{\\sum (x_i - \\bar{x})^2 \\sum (y_i - \\bar{y})^2}}$$"),
+              p(
+                "A strong correlation does not imply causation; trends may be influenced by confounding factors such as population aging and healthcare improvements."
               )
             )
           )
@@ -247,9 +278,9 @@ ui <- dashboardPage(
             width = 12, status = "primary", solidHeader = TRUE,
             title = "Age-Specific Probability of Death (Life Table Analysis)",
             p(
-             "Interactive chart of \\( q_x \\) (per mille) by age. ",
-  "These are age-specific mortality probabilities derived from life tables, ",
-  "allowing comparison independent of population structure.",
+              "Interactive chart of \\( q_x \\) (per mille) by age. ",
+              "These are age-specific mortality probabilities derived from life tables, ",
+              "allowing comparison independent of population structure.",
               "Use the year slider to animate change across ", strong("2000-2024"), ". ",
               "Toggle between males, females, or both using the filter below."
             )
