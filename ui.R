@@ -3,15 +3,16 @@
 # =============================================================================
 
 ui <- dashboardPage(
+  title = "Finland Health Dashboard",
   skin = "blue",
   
   # -- Header --------------------------------------------------------------
   dashboardHeader(
     title = tags$span(
       tags$img(
-        src   = "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Flag_of_Finland.svg/23px-Flag_of_Finland.svg.png",
+        src   = "finland_flag.webp",
         alt   = "Finland flag",
-        style = "margin-right:6px; vertical-align:middle;"
+        style = "margin-right:6px; vertical-align:middle; width:23px;"
       ),
       "Finland Health Dashboard"
     ),
@@ -36,6 +37,7 @@ ui <- dashboardPage(
     
     # Custom CSS for polished look
     tags$head(
+      tags$link(rel = "shortcut icon", href = "finland_flag.webp"),
       tags$style(HTML("
         .content-wrapper, .right-side { background-color: #f4f6f9; }
         .box { border-top: 3px solid #3c8dbc; }
