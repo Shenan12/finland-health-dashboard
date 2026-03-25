@@ -285,13 +285,18 @@ server <- function(input, output, session) {
     ppv <- tp / (tp + fp)
     npv <- tn / (tn + fn)
     
+    lr_pos <- sensitivity / (1 - specificity)
+    lr_neg <- (1 - sensitivity) / specificity
+    
     list(
-      ppv         = ppv,
-      npv         = npv,
+      ppv = ppv,
+      npv = npv,
       sensitivity = sensitivity,
       specificity = specificity,
-      prevalence  = prevalence,
-      tp = tp, fp = fp, fn = fn, tn = tn
+      prevalence = prevalence,
+      tp = tp, fp = fp, fn = fn, tn = tn,
+      lr_pos = lr_pos,
+      lr_neg = lr_neg
     )
   }, ignoreNULL = FALSE)
   
@@ -324,7 +329,25 @@ server <- function(input, output, session) {
       color    = "blue"
     )
   })
+  output$lr_pos_box <- renderValueBox({
+    res <- ppv_results()
+    valueBox(
+      value = round(res$lr_pos, 2),
+      subtitle = "Likelihood Ratio +",
+      icon = icon("plus"),
+      color = "green"
+    )
+  })
   
+  output$lr_neg_box <- renderValueBox({
+    res <- ppv_results()
+    valueBox(
+      value = round(res$lr_neg, 2),
+      subtitle = "Likelihood Ratio -",
+      icon = icon("minus"),
+      color = "red"
+    )
+  })
   output$ppv_plot <- renderPlotly({
     res <- ppv_results()
     

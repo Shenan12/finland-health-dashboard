@@ -60,6 +60,12 @@ ui <- dashboardPage(
         }
       "))
     ),
+    tags$style(HTML("
+  /* Make all value boxes in the Screening tab same height */
+  #screening .value-box {
+    min-height: 120px !important;
+  }
+")),
     
     tabItems(
       
@@ -371,9 +377,11 @@ ui <- dashboardPage(
             width = 8, status = "success",
             title = "Results",
             fluidRow(
-              valueBoxOutput("ppv_result",  width = 4),
-              valueBoxOutput("npv_result",  width = 4),
-              valueBoxOutput("prev_result", width = 4)
+              valueBoxOutput("ppv_result",  width = 3),
+              valueBoxOutput("npv_result",  width = 3),
+              valueBoxOutput("prev_result", width = 3),
+              valueBoxOutput("lr_pos_box",  width = 3),
+              valueBoxOutput("lr_neg_box",  width = 3)
             ),
             hr(),
             plotlyOutput("ppv_plot", height = "320px"),
