@@ -35,6 +35,9 @@ ui <- dashboardPage(
   # -- Body ------------------------------------------------------------------
   dashboardBody(
     
+    # Load MathJax globally so equations render in every tab on page load
+    withMathJax(),
+    
     # Custom CSS for polished look
     tags$head(
       tags$link(rel = "shortcut icon", href = "finland_flag.webp"),
@@ -58,6 +61,16 @@ ui <- dashboardPage(
           border-radius: 4px;
           font-size: 0.92em;
         }
+      ")),
+      # Re-typeset MathJax when a shinydashboard tab is shown or when
+      # a Shiny output (e.g. renderUI formula) is updated
+      tags$script(HTML("
+        $(document).on('shown.bs.tab', function() {
+          if (window.MathJax) { MathJax.Hub.Queue(['Typeset', MathJax.Hub]); }
+        });
+        $(document).on('shiny:value', function() {
+          if (window.MathJax) { MathJax.Hub.Queue(['Typeset', MathJax.Hub]); }
+        });
       "))
     ),
     tags$style(HTML("
@@ -130,7 +143,6 @@ ui <- dashboardPage(
       # -- TAB 2: Theoretical Framework ------------------------------------
       tabItem(
         tabName = "theory",
-        withMathJax(),
         fluidRow(
           box(
             width = 12, status = "primary", solidHeader = TRUE,
@@ -334,7 +346,6 @@ ui <- dashboardPage(
       # -- TAB 5: Screening Calculator --------------------------------------
       tabItem(
         tabName = "screening",
-        withMathJax(),
         fluidRow(
           box(
             width = 12, status = "primary", solidHeader = TRUE,
