@@ -283,6 +283,9 @@ ui <- dashboardPage(
           )
         ),
         fluidRow(
+          valueBoxOutput("corr_box", width = 6)
+        ),
+        fluidRow(
           box(
             width = 6, status = "success",
             title = "Hospital Beds per 100 000 Population",
@@ -297,6 +300,18 @@ ui <- dashboardPage(
             width = 6, status = "danger",
             title = "Cancer Mortality Rate per 100 000 Population",
             plotlyOutput("cancer_plot", height = "380px")
+          )
+        ),
+        fluidRow(
+          box(
+            width = 12, status = "warning",
+            title = "Ecological Study: Hospital Beds vs Cancer Mortality",
+            p(
+              "Scatter plot of the ", strong("overlapping years (2000-2021)"),
+              " where both datasets are available. Each point represents one year. ",
+              "The dashed line shows the ordinary least-squares linear trend."
+            ),
+            plotlyOutput("scatter_plot", height = "420px")
           )
         ),
         fluidRow(

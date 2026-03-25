@@ -227,9 +227,61 @@ server <- function(input, output, session) {
       )
   })
   
-  # ==========================================================================
-  # TAB 5: Screening Calculator
-  # ==========================================================================
+  # -- Correlation Value Box --------------------------------------------------
+  output$corr_box <- renderValueBox({
+    r_val <- round(beds_cancer_r, 3)
+    color <- if (abs(r_val) >= 0.7) "green" else if (abs(r_val) >= 0.4) "yellow" else "blue"
+    valueBox(
+      value    = r_val,
+      subtitle = "Pearson r: Hospital Beds vs Cancer Mortality (overlapping years)",
+      icon     = icon("chart-line"),
+      color    = color
+    )
+  })
+
+  # -- Scatter Plot: Beds vs Cancer -------------------------------------------
+  output$scatter_plot <- renderPlotly({
+    df      <- epi_combined
+    lm_fit  <- lm(deaths_per_100k ~ beds_per_100k, data = df)
+    df$yfit <- predict(lm_fit, newdata = df)
+
+    plot_ly(df, x = ~beds_per_100k, y = ~deaths_per_100k,
+            type = "scatter", mode = "markers",
+            text = ~paste0("<b>Year:</b> ", year,
+                           "<br><b>Beds / 100k:</b> ", round(beds_per_100k, 1),
+                           "<br><b>Deaths / 100k:</b> ", round(deaths_per_100k, 2)),
+            hoverinfo = "text",
+            marker = list(color = "#8e44ad", size = 9, opacity = 0.8),
+            name = "Observed") |>
+      add_trace(
+        x = ~beds_per_100k, y = ~yfit,
+        type = "scatter", mode = "lines",
+        name = "Linear trend",
+        line = list(color = "#2c3e50", width = 2, dash = "dash"),
+        hoverinfo = "skip"
+      ) |>
+      layout(
+        annotations = list(list(
+          text      = paste0("r = ", round(beds_cancer_r, 3)),
+          xref      = "paper",
+          yref      = "paper",
+          x         = 0.98,
+          y         = 0.97,
+          xanchor   = "right",
+          yanchor   = "top",
+          showarrow = FALSE,
+          font      = list(size = 14, color = "#2c3e50")
+        )),
+        xaxis = list(title = "Hospital Beds per 100 000 population",
+                     showgrid = TRUE, gridcolor = "#e0e0e0"),
+        yaxis = list(title = "Cancer Deaths per 100 000 population",
+                     showgrid = TRUE, gridcolor = "#e0e0e0"),
+        legend = list(orientation = "h", x = 0, y = -0.15),
+        plot_bgcolor  = "#fafafa",
+        paper_bgcolor = "#fafafa"
+      )
+  })
+
   
   ppv_results <- eventReactive(input$ppv_calc, {
     sensitivity <- input$ppv_sensitivity / 100

@@ -65,13 +65,26 @@ cancer_raw <- read_csv(
 max_cancer_year <- max(cancer_raw$year, na.rm = TRUE)
 max_beds_year   <- max(beds_raw$year, na.rm = TRUE)
 
-# -- 4. Pre-compute Baseline Prevalence --------------------------------------
+# -- 4. Combined Beds + Cancer Dataset (ecological study) --------------------
+epi_combined <- inner_join(
+  beds_raw   |> select(year, beds_per_100k),
+  cancer_raw |> select(year, deaths_per_100k),
+  by = "year"
+)
+
+beds_cancer_r <- cor(
+  epi_combined$beds_per_100k,
+  epi_combined$deaths_per_100k,
+  method = "pearson"
+)
+
+# -- 5. Pre-compute Baseline Prevalence --------------------------------------
 # A baseline prevalence estimate (per 100k) is required to initialize 
 # the Bayesian PPV calculator on startup.
 finland_2021_prevalence <- 3168
 finland_prevalence_prop <- finland_2021_prevalence / 100000
 
-# -- 5. Year ranges ---------------------------------------------------------
+# -- 6. Year ranges ---------------------------------------------------------
 lt_years     <- sort(unique(life_raw$year))
 lt_ages      <- sort(unique(life_raw$age))
 cancer_years <- sort(unique(cancer_raw$year))
