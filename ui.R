@@ -24,12 +24,12 @@ ui <- dashboardPage(
     width = 230,
     sidebarMenu(
       id = "sidebar",
-      menuItem("Home",                    tabName = "home",         icon = icon("house")),
-      menuItem("Theoretical Framework",   tabName = "theory",       icon = icon("flask")),
-      menuItem("Demographics",            tabName = "demographics", icon = icon("chart-line")),
-      menuItem("Healthcare & Epidemiology", tabName = "epi",        icon = icon("hospital")),
-      menuItem("Mortality Analysis",      tabName = "mortality",    icon = icon("heartbeat")),
-      menuItem("Screening Calculator",    tabName = "screening",    icon = icon("calculator"))
+      menuItem("Home",                     tabName = "home",              icon = icon("house")),
+      menuItem("Demography",               tabName = "demography",        icon = icon("chart-line")),
+      menuItem("Mortality & Disease",      tabName = "mortality_disease", icon = icon("heartbeat")),
+      menuItem("Epidemiology & Models",    tabName = "epi_models",        icon = icon("hospital")),
+      menuItem("Screening Calculator",     tabName = "screening",         icon = icon("calculator")),
+      menuItem("Theory",                   tabName = "theory",            icon = icon("flask"))
     )
   ),
   
@@ -77,7 +77,7 @@ ui <- dashboardPage(
         .info-box-icon { font-size: 2em; }
         /* Equal-height value boxes */
         #shiny-tab-screening .small-box,
-        #shiny-tab-mortality  .small-box { min-height: 120px !important; }
+        #shiny-tab-mortality-disease .small-box { min-height: 120px !important; }
         /* Subtitle wrapping */
         .small-box .inner p { white-space: normal !important; word-wrap: break-word; }
         /* ---- Section sub-headers ---- */
@@ -146,7 +146,9 @@ ui <- dashboardPage(
     
     tabItems(
       
-      # -- TAB 1: Home ----------------------------------------------------
+      # =========================================================
+      # TAB 1: Home
+      # =========================================================
       tabItem(
         tabName = "home",
         fluidRow(
@@ -156,27 +158,70 @@ ui <- dashboardPage(
             p(
               "This dashboard provides an interactive analysis of key public-health ",
               "indicators in ", tags$strong("Finland"), " over the period ",
-              tags$strong("2000-2024"), ". It combines three official data sources to ",
+              tags$strong("2000-2024"), ". It combines official data sources to ",
               "visualise demographic mortality patterns, hospital bed capacity, cancer ",
               "burden, and to support evidence-based screening decisions."
             ),
             p("Use the sidebar to navigate the six analytical sections:"),
             tags$ul(
-              tags$li(tags$strong("Home"), " - project overview and data citations."),
-              tags$li(tags$strong("Theoretical Framework"), " - mathematical background."),
-              tags$li(tags$strong("Demographics"), " - age-specific probability of death over time."),
-              tags$li(tags$strong("Healthcare & Epi"), " - hospital capacity vs cancer mortality and multivariate regression."),
-              tags$li(tags$strong("Mortality Analysis"), " - all-cause death rate trends, rate of change, and lag analysis."),
-              tags$li(tags$strong("Screening Calculator"), " - Bayesian PPV tool.")
+              tags$li(tags$strong("Home"),                  " - project overview and data citations."),
+              tags$li(tags$strong("Demography"),            " - age-specific mortality, population pyramid, and birth rate trends."),
+              tags$li(tags$strong("Mortality & Disease"),   " - all-cause death rates, cause-specific trends, and cancer burden."),
+              tags$li(tags$strong("Epidemiology & Models"), " - hospital capacity, regression models, and lag analysis."),
+              tags$li(tags$strong("Screening Calculator"),  " - Bayesian PPV tool for cancer screening."),
+              tags$li(tags$strong("Theory"),                " - mathematical and statistical background.")
             )
           )
         ),
+
+        # Research Questions
         fluidRow(
-          infoBox("Life Table Years",   "2000 - 2024", icon = icon("calendar"), color = "blue",  width = 3),
-          infoBox("Hospital Bed Years", "2000 - 2023", icon = icon("bed"),      color = "green", width = 3),
-          infoBox("Cancer Data Years",  "2000 - 2021", icon = icon("ribbon"),   color = "red",   width = 3),
+          box(
+            width = 12, status = "info",
+            title = "Research Questions",
+            tags$ul(
+              tags$li("How has mortality changed over time in Finland?"),
+              tags$li("What factors influence overall mortality rates?"),
+              tags$li("How does disease composition evolve across decades?"),
+              tags$li("What is the role of healthcare capacity in population health?")
+            )
+          )
+        ),
+
+        # Key insight value boxes
+        fluidRow(
+          valueBox(
+            value    = "\u2193 30%",
+            subtitle = "Death rate reduction 2000-2024",
+            icon     = icon("arrow-down"),
+            color    = "green",
+            width    = 4
+          ),
+          valueBox(
+            value    = "~22%",
+            subtitle = "of all deaths are cancer-related",
+            icon     = icon("ribbon"),
+            color    = "red",
+            width    = 4
+          ),
+          valueBox(
+            value    = "Declining",
+            subtitle = "Hospital beds per 100k since 2000",
+            icon     = icon("bed"),
+            color    = "blue",
+            width    = 4
+          )
+        ),
+
+        # Data coverage info boxes
+        fluidRow(
+          infoBox("Life Table Years",   "2000 - 2024", icon = icon("calendar"),  color = "blue",   width = 3),
+          infoBox("Hospital Bed Years", "2000 - 2023", icon = icon("bed"),       color = "green",  width = 3),
+          infoBox("Cancer Data Years",  "2000 - 2021", icon = icon("ribbon"),    color = "red",    width = 3),
           infoBox("Death Rate Years",   "2000 - 2024", icon = icon("chart-bar"), color = "purple", width = 3)
         ),
+
+        # Data citations (unchanged)
         fluidRow(
           box(
             width = 12, title = "Official Data Citations", status = "info",
@@ -185,25 +230,33 @@ ui <- dashboardPage(
                   tags$li(
                     "Statistics Finland. ",
                     tags$em("Life table by age and sex, 1986-2024."), " ",
-                    tags$a("https://pxdata.stat.fi/PxWeb/pxweb/en/StatFin/StatFin__kuol/statfin_kuol_pxt_12ap.px/", href = "https://pxdata.stat.fi/PxWeb/pxweb/en/StatFin/StatFin__kuol/statfin_kuol_pxt_12ap.px/", target = "_blank"),
+                    tags$a("https://pxdata.stat.fi/PxWeb/pxweb/en/StatFin/StatFin__kuol/statfin_kuol_pxt_12ap.px/",
+                           href = "https://pxdata.stat.fi/PxWeb/pxweb/en/StatFin/StatFin__kuol/statfin_kuol_pxt_12ap.px/",
+                           target = "_blank"),
                     ". Accessed 2026."
                   ),
                   tags$li(
                     "Our World in Data. ",
                     tags$em("Hospital beds (per 1,000 people)."), " ",
-                    tags$a("https://ourworldindata.org/grapher/hospital-beds-per-1000-people", href = "https://ourworldindata.org/grapher/hospital-beds-per-1000-people", target = "_blank"),
+                    tags$a("https://ourworldindata.org/grapher/hospital-beds-per-1000-people",
+                           href = "https://ourworldindata.org/grapher/hospital-beds-per-1000-people",
+                           target = "_blank"),
                     ". Accessed 2026."
                   ),
                   tags$li(
                     "Our World in Data. ",
                     tags$em("Death rate from cancer."), " ",
-                    tags$a("https://ourworldindata.org/grapher/death-rate-from-cancer", href = "https://ourworldindata.org/grapher/death-rate-from-cancer", target = "_blank"),
+                    tags$a("https://ourworldindata.org/grapher/death-rate-from-cancer",
+                           href = "https://ourworldindata.org/grapher/death-rate-from-cancer",
+                           target = "_blank"),
                     ". Accessed 2026."
                   ),
                   tags$li(
                     "Statistics Finland. ",
                     tags$em("Deaths, age-standardised and crude death rates by cause of death and sex, 1971-2024 (table 11ay)."), " ",
-                    tags$a("https://stat.fi/til/ksyyt/index_en.html", href = "https://stat.fi/til/ksyyt/index_en.html", target = "_blank"),
+                    tags$a("https://stat.fi/til/ksyyt/index_en.html",
+                           href = "https://stat.fi/til/ksyyt/index_en.html",
+                           target = "_blank"),
                     ". Accessed 2026."
                   )
                 )
@@ -211,129 +264,12 @@ ui <- dashboardPage(
           )
         )
       ),
-      
-      # -- TAB 2: Theoretical Framework ------------------------------------
+
+      # =========================================================
+      # TAB 2: Demography
+      # =========================================================
       tabItem(
-        tabName = "theory",
-        fluidRow(
-          box(
-            width = 12, status = "primary", solidHeader = TRUE,
-            title = "Mathematical Framework",
-            p(
-              "The statistical foundations used throughout this dashboard are ",
-              "presented below. Equations are rendered using LaTeX notation via MathJax."
-            )
-          )
-        ),
-        fluidRow(
-          # --- Life Table / qx
-          box(
-            width = 6, status = "info",
-            title = "1. Age-specific Probability of Death \\( q_x \\)",
-            div(
-              class = "equation-box",
-              p(tags$strong("Definition:")),
-              p(
-                "The age-specific probability of death \\( q_x \\) represents the probability that an individual aged exactly \\( x \\) will die before reaching age \\( x+1 \\)."
-              ),
-              p("Formula:"),
-              p("$$q_x = \\frac{d_x}{l_x}$$"),
-              tags$ul(
-                tags$li("\\( d_x \\) - number of deaths between ages \\( x \\) and \\( x+1 \\)"),
-                tags$li("\\( l_x \\) - number of survivors reaching age \\( x \\) (radix = 100,000)")
-              ),
-              p("Force-of-mortality approximation:"),
-              p("$$q_x \\approx 1 - e^{-\\mu_x}$$"),
-              p("where \\( \\mu_x \\) is the hazard rate (force of mortality) at age \\( x \\).")
-            )
-          ),
-          
-          # --- Screening / PPV
-          box(
-            width = 6, status = "success",
-            title = "2. Bayesian Screening Metrics",
-            div(
-              class = "equation-box",
-              p(tags$strong("Positive Predictive Value (PPV)")),
-              p(
-                "PPV quantifies the probability that a positive test result correctly identifies disease. ",
-                "It depends on test characteristics and disease prevalence."
-              ),
-              p("Formula:"),
-              p("$$\\text{PPV} = \\frac{\\text{Sensitivity} \\times \\text{Prevalence}}{\\text{Sensitivity} \\times \\text{Prevalence} + (1 - \\text{Specificity}) \\times (1 - \\text{Prevalence})}$$"),
-              p("Complementary metric - Negative Predictive Value (NPV):"),
-              p("$$\\text{NPV} = \\frac{\\text{Specificity} \\times (1 - \\text{Prevalence})}{\\text{Specificity} \\times (1 - \\text{Prevalence}) + (1 - \\text{Sensitivity}) \\times \\text{Prevalence}}$$"),
-              tags$ul(
-                tags$li("\\( P(T^+|D^+) \\) - sensitivity"),
-                tags$li("\\( P(T^-|D^-) \\) - specificity"),
-                tags$li("\\( P(D^+) \\) - disease prevalence")
-              ),
-              p(
-                "These metrics are essential for evaluating the effectiveness of screening programs, especially when disease prevalence is low."
-              )
-            )
-          )
-        ),
-        # --- Gompertz-Makeham Mortality Model
-        fluidRow(
-          box(
-            width = 12, status = "warning",
-            title = "3. Gompertz-Makeham Mortality Model",
-            div(
-              class = "equation-box",
-              p(
-                "The Gompertz-Makeham law models the exponential rise of mortality with age, separating age-independent and age-dependent hazards:"
-              ),
-              p("$$\\mu(x) = A + B e^{c x}$$"),
-              tags$ul(
-                tags$li("\\( A \\) - background hazard (age-independent)"),
-                tags$li("\\( B, c \\) - parameters governing age-dependent mortality")
-              ),
-              p("Estimates for Finland suggest \\( c \\approx 0.09 \\) for both sexes.")
-            )
-          )
-        ),
-        # --- Odds Ratio & Relative Risk
-        fluidRow(
-          box(
-            width = 6, status = "primary",
-            title = "4. Odds Ratio (OR) & Relative Risk (RR)",
-            div(
-              class = "equation-box",
-              p(
-                "These metrics compare mortality between males and females at a given age."
-              ),
-              p("Relative Risk (RR):"),
-              p("$$RR = \\frac{P_{male}}{P_{female}}$$"),
-              p("Odds Ratio (OR):"),
-              p("$$OR = \\frac{P_{male} / (1-P_{male})}{P_{female} / (1-P_{female})}$$"),
-              p(
-                "Where \\( P_{male} \\) and \\( P_{female} \\) are the probabilities of death for males and females respectively. ",
-                "These provide insight into sex-specific risk differences."
-              )
-            )
-          ),
-          # --- Pearson Correlation
-          box(
-            width = 6, status = "primary",
-            title = "5. Correlation Analysis",
-            div(
-              class = "equation-box",
-              p(
-                "To examine the association between healthcare capacity and cancer mortality, we compute the Pearson correlation coefficient:"
-              ),
-              p("$$r = \\frac{\\sum (x_i - \\bar{x})(y_i - \\bar{y})}{\\sqrt{\\sum (x_i - \\bar{x})^2 \\sum (y_i - \\bar{y})^2}}$$"),
-              p(
-                "A strong correlation does not imply causation; trends may be influenced by confounding factors such as population aging and healthcare improvements."
-              )
-            )
-          )
-        )
-      ),
-      
-      # -- TAB 3: Demographics ----------------------------------------------
-      tabItem(
-        tabName = "demographics",
+        tabName = "demography",
         fluidRow(
           box(
             width = 12, status = "primary", solidHeader = TRUE,
@@ -382,44 +318,223 @@ ui <- dashboardPage(
         ),
         fluidRow(
           box(
-            width = 12, status = "primary", title = "Stationary Population Structure (Linked to Year Slider Above)", p("This plot updates with the year selected in the mortality chart above."),
+            width = 12, status = "primary",
+            title = "Stationary Population Structure (Linked to Year Slider Above)",
+            p("This plot updates with the year selected in the mortality chart above."),
             plotlyOutput("pyramid_plot", height = "400px")
           )
-        )
-      ),
-      
-      # -- TAB 4: Healthcare & Epi ------------------------------------------
-      tabItem(
-        tabName = "epi",
-        fluidRow(
-          box(
-            width = 12, status = "primary", solidHeader = TRUE,
-            title = "Epidemiological Trends: Healthcare Capacity & Cancer Burden",
-            p(
-              "Side-by-side comparison of ", strong("hospital bed capacity"),
-              " (2000-2023) and ", strong("cancer mortality rates"),
-              " (2000-2021). Note the different data extents."
-            )
-          )
         ),
+
+        # Birth Rate section
         fluidRow(
           box(
             width = 6, status = "success",
+            title = "Total Live Births per Year",
+            plotlyOutput("birth_rate_plot", height = "350px"),
+            div(class = "interp-text",
+                "Live births in Finland have declined sharply from ~58,000 in 2000 to under 45,000 by the early 2020s, reflecting demographic transition and changing societal patterns."
+            )
+          ),
+          box(
+            width = 6, status = "warning",
+            title = "Stillbirth Rate per 1 000 Births",
+            plotlyOutput("stillbirth_plot", height = "350px"),
+            div(class = "interp-text",
+                "The stillbirth rate has remained relatively stable around 4-5 per 1 000 births, reflecting sustained quality of perinatal care."
+            )
+          )
+        ),
+
+        # Demographic Transition Interpretation
+        fluidRow(
+          box(
+            width = 12, status = "info",
+            title = "Demographic Transition Interpretation",
+            p(
+              "Finland is experiencing a classic late-stage ", tags$strong("demographic transition"),
+              ": declining birth rates signal that societal, economic, and healthcare factors are",
+              " now primary drivers of family size decisions rather than survival necessity."
+            ),
+            p(
+              "The resulting ", tags$strong("aging population"), " places growing pressure on",
+              " healthcare systems, pension funds, and social services, as the ratio of working-age",
+              " individuals to retirees continues to shrink."
+            ),
+            p(
+              "Smaller birth cohorts entering the workforce each year will further constrain",
+              " economic productivity and tax revenues, making long-term sustainability planning",
+              " a critical policy priority."
+            )
+          )
+        )
+      ),
+
+      # =========================================================
+      # TAB 3: Mortality & Disease
+      # =========================================================
+      tabItem(
+        tabName = "mortality_disease",
+        fluidRow(
+          box(
+            width = 12, status = "primary", solidHeader = TRUE,
+            title = "All-Cause Mortality & Disease Burden: Finland 2000-2024",
+            p(
+              "Analysis of Finland's age-standardised all-cause death rate ",
+              "(per 100 000 population) from Statistics Finland, with cause-specific ",
+              "breakdowns and cancer burden analysis. Data covers 2000-2024."
+            )
+          )
+        ),
+
+        # Summary value boxes
+        fluidRow(
+          valueBoxOutput("mort_latest_box",  width = 4),
+          valueBoxOutput("mort_avg_box",     width = 4),
+          valueBoxOutput("mort_change_box",  width = 4)
+        ),
+
+        # Death rate time series
+        fluidRow(
+          box(
+            width = 12, status = "primary",
+            title = tags$span(icon("chart-line"), " Death Rate Over Time (with LOESS Trend)"),
+            plotlyOutput("mort_ts_plot", height = "400px"),
+            div(class = "interp-text",
+                tags$strong("Interpretation: "),
+                "Finland's age-standardised death rate has generally declined since 2000, ",
+                "reflecting improvements in healthcare, lifestyle, and public health policy. ",
+                "The dashed LOESS curve highlights the long-term downward trend.",
+                " A sharp uptick is visible around 2022, likely related to excess ",
+                "COVID-19 mortality."
+            )
+          )
+        ),
+
+        # Rate of change + cancer mortality
+        fluidRow(
+          box(
+            width = 6, status = "warning",
+            title = tags$span(icon("exchange-alt"), " Year-on-Year % Change in Death Rate"),
+            plotlyOutput("mort_roc_plot", height = "380px"),
+            div(class = "interp-text",
+                tags$strong("Interpretation: "),
+                "Positive values indicate years where mortality increased relative to the ",
+                "previous year; negative values indicate improvement. ",
+                "Large positive spikes may correspond to severe influenza seasons, ",
+                "cold winters, or pandemic years."
+            )
+          ),
+          box(
+            width = 6, status = "danger",
+            title = tags$span(icon("ribbon"), " Cancer Mortality Rate per 100 000 Population"),
+            div(style = "height: 10px;"),
+            plotlyOutput("cancer_plot", height = "380px"),
+            div(class = "interp-text",
+                tags$strong("Interpretation: "),
+                "Cancer mortality has shown a declining trend over the period 2000-2021, ",
+                "consistent with improvements in early detection, treatment, and prevention."
+            )
+          )
+        ),
+
+        # Cause-specific stacked area
+        fluidRow(
+          box(
+            width = 12, status = "info",
+            title = "Cause-Specific Mortality: Stacked Area Chart",
+            plotlyOutput("cause_area_plot", height = "420px"),
+            div(class = "interp-text",
+                tags$strong("Interpretation: "),
+                "Finland's disease burden has shifted markedly over decades from ",
+                "infectious and acute conditions toward chronic diseases such as ",
+                "cardiovascular disease and cancer. This epidemiological transition ",
+                "reflects rising life expectancy and changing risk factor profiles."
+            )
+          )
+        ),
+
+        # Tumour share + comparative
+        fluidRow(
+          box(
+            width = 6, status = "danger",
+            title = "Cancer as Share of Total Deaths",
+            plotlyOutput("tumour_share_plot", height = "350px"),
+            div(class = "interp-text",
+                tags$strong("Interpretation: "),
+                "Cancer's share of total deaths reflects both improvements in competing ",
+                "causes (e.g. cardiovascular disease declining faster) and the slowly ",
+                "changing cancer burden. A rising share may indicate relative success in ",
+                "reducing other causes rather than an increase in absolute cancer deaths."
+            )
+          ),
+          box(
+            width = 6, status = "danger",
+            title = tags$span(icon("balance-scale"), " Overall vs Cancer Mortality (2000-2021)"),
+            plotlyOutput("mort_compare_plot", height = "350px"),
+            div(class = "interp-text",
+                tags$strong("Interpretation: "),
+                "Both series are normalised to their 2000 baseline (index = 100) to allow ",
+                "direct comparison of relative decline. Cancer mortality has declined ",
+                "faster than all-cause mortality, indicating broad improvements across ",
+                "multiple disease categories."
+            )
+          )
+        )
+      ),
+
+      # =========================================================
+      # TAB 4: Epidemiology & Models
+      # =========================================================
+      tabItem(
+        tabName = "epi_models",
+        fluidRow(
+          box(
+            width = 12, status = "primary", solidHeader = TRUE,
+            title = "Epidemiological Trends: Healthcare Capacity & Regression Models",
+            p(
+              "Side-by-side comparison of ", strong("hospital bed capacity"),
+              " (2000-2023) and advanced regression models examining relationships ",
+              "between healthcare capacity, cancer burden, and overall mortality."
+            )
+          )
+        ),
+
+        # Ecological limitation warning
+        fluidRow(
+          box(
+            width = 12, status = "danger",
+            title = tags$span(icon("exclamation-triangle"), " Ecological Study Limitation"),
+            div(class = "interp-text",
+                tags$strong("Ecological Study Limitation: "),
+                "All analyses in this section use aggregate yearly data, not individual patient data. ",
+                "This is an ecological study design. Associations observed here may reflect ",
+                "confounding by time trends (secular trends) and ",
+                tags$strong("cannot establish causation.")
+            )
+          )
+        ),
+
+        # Hospital beds
+        fluidRow(
+          box(
+            width = 12, status = "success",
             title = "Hospital Beds per 100 000 Population",
             selectInput(
               "beds_smooth", "Trend line:",
               choices  = c("None", "Loess", "Linear"),
               selected = "Loess"
             ),
-            plotlyOutput("beds_plot", height = "380px")
-          ),
-          box(
-            width = 6, status = "danger",
-            title = "Cancer Mortality Rate per 100 000 Population",
-            div(style = "height: 74px;"), # Invisible spacer to align perfectly with the trend line dropdown
-            plotlyOutput("cancer_plot", height = "380px")
+            plotlyOutput("beds_plot", height = "380px"),
+            div(class = "interp-text",
+                tags$strong("Interpretation: "),
+                "Hospital bed capacity in Finland has declined steadily since 2000, ",
+                "reflecting a policy shift toward outpatient care and efficiency-driven ",
+                "healthcare restructuring."
+            )
           )
         ),
+
+        # Correlation box + scatter
         fluidRow(
           box(
             width = 4, status = "warning",
@@ -431,28 +546,17 @@ ui <- dashboardPage(
             title = "Correlation: Beds vs. Cancer Mortality",
             plotlyOutput("corr_scatter", height = "300px"),
             br(),
-            p(
-              tags$strong("Interpretation: "),
-              "This represents an ecological correlation over time. ",
-              tags$strong("It does not imply causation."),
-              " as both variables may be influenced ",
-              "by underlying factors such as population aging and healthcare improvements."
-            )
-          )
-        ),
-        fluidRow(
-          box(
-            width = 12, status = "info",
-            title = "Data Notes",
-            tags$ul(
-              tags$li("Hospital bed data (Our World in Data) covers 2000-2023 (24 data points)."),
-              tags$li("Cancer mortality data (Our World in Data) covers 2000-2021 (22 data points)."),
-              tags$li("Mismatched timelines are intentional; each dataset uses its available extent.")
+            div(class = "interp-text",
+                tags$strong("Interpretation: "),
+                "This represents an ecological correlation over time. ",
+                tags$strong("It does not imply causation."),
+                " Both variables may be influenced ",
+                "by underlying factors such as population aging and healthcare improvements."
             )
           )
         ),
 
-        # ---- Advanced Epidemiology ----
+        # Advanced section header
         fluidRow(
           box(
             width = 12, status = "primary", solidHeader = TRUE,
@@ -464,12 +568,12 @@ ui <- dashboardPage(
           )
         ),
 
-        # -- Multivariate Regression ----------------------------------------
+        # Multivariate regression
         fluidRow(
           box(
             width = 6, status = "primary",
             title = tags$span(icon("chart-line"), " Multivariate Linear Regression"),
-            tags$h4("Model: death_rate ~ beds_per_100k + deaths_per_100k",
+            tags$h4("Model: death_rate ~ beds_per_100k + deaths_per_100k + year",
                     class = "section-header"),
             tableOutput("lm_coef_table"),
             br(),
@@ -478,10 +582,9 @@ ui <- dashboardPage(
                 tags$strong("Interpretation: "),
                 "The model estimates how much the overall (age-standardised) ",
                 "death rate changes with each unit change in hospital bed capacity ",
-                "and cancer mortality, holding the other variable constant. ",
-                "A negative coefficient for beds suggests more capacity is associated ",
-                "with lower mortality; a positive coefficient for cancer deaths ",
-                "reflects its contribution to overall mortality burden."
+                "and cancer mortality, holding the other predictors constant. ",
+                "The year term captures the underlying time trend (secular change) ",
+                "independent of beds or cancer mortality."
             )
           ),
           box(
@@ -497,7 +600,7 @@ ui <- dashboardPage(
           )
         ),
 
-        # -- Correlation Matrix ----------------------------------------------
+        # Correlation matrix
         fluidRow(
           box(
             width = 12, status = "info",
@@ -513,12 +616,12 @@ ui <- dashboardPage(
           )
         ),
 
-        # -- Logistic Regression --------------------------------------------
+        # Logistic regression
         fluidRow(
           box(
             width = 6, status = "warning",
             title = tags$span(icon("percent"), " Logistic Regression: Predictors of High Mortality"),
-            p("Binary outcome: death rate above the historical median (1 = high, 0 = low)."),
+            p("Binary outcome: death rate above the top 25% threshold (75th percentile) (1 = high, 0 = low)."),
             tableOutput("glm_coef_table"),
             br(),
             div(class = "interp-text",
@@ -526,7 +629,7 @@ ui <- dashboardPage(
                 "Odds ratios (OR) greater than 1 indicate that higher values of the ",
                 "predictor are associated with increased odds of a high-mortality year. ",
                 "An OR < 1 for beds suggests more bed capacity is associated with lower ",
-                "odds of above-median overall mortality."
+                "odds of above top-25% overall mortality."
             )
           ),
           box(
@@ -548,12 +651,12 @@ ui <- dashboardPage(
                 tags$strong("How to read: "),
                 "The predicted probability (0-100%) reflects the logistic model's ",
                 "estimate that a year with these indicator values would have an ",
-                "above-median overall death rate."
+                "above top-25% overall death rate."
             )
           )
         ),
 
-        # -- Lag Analysis ---------------------------------------------------
+        # Lag analysis
         fluidRow(
           box(
             width = 12, status = "success",
@@ -575,75 +678,9 @@ ui <- dashboardPage(
         )
       ),
 
-      # -- TAB 5: Mortality Analysis ----------------------------------------
-      tabItem(
-        tabName = "mortality",
-        fluidRow(
-          box(
-            width = 12, status = "primary", solidHeader = TRUE,
-            title = "All-Cause Mortality Analysis: Finland 2000-2024",
-            p(
-              "Analysis of Finland's age-standardised all-cause death rate ",
-              "(per 100 000 population) from Statistics Finland. ",
-              "The data covers all sexes combined for the period 2000-2024."
-            )
-          )
-        ),
-
-        # Value boxes
-        fluidRow(
-          valueBoxOutput("mort_latest_box",  width = 4),
-          valueBoxOutput("mort_avg_box",     width = 4),
-          valueBoxOutput("mort_change_box",  width = 4)
-        ),
-
-        # Time series
-        fluidRow(
-          box(
-            width = 12, status = "primary",
-            title = tags$span(icon("chart-line"), " Death Rate Over Time (with LOESS Trend)"),
-            plotlyOutput("mort_ts_plot", height = "400px"),
-            div(class = "interp-text",
-                tags$strong("Interpretation: "),
-                "Finland's age-standardised death rate has generally declined since 2000, ",
-                "reflecting improvements in healthcare, lifestyle, and public health policy. ",
-                "The dashed LOESS curve highlights the long-term downward trend.",
-                " A sharp uptick is visible around 2022, likely related to excess ",
-                "COVID-19 mortality."
-            )
-          )
-        ),
-
-        # Comparative plot + rate of change
-        fluidRow(
-          box(
-            width = 6, status = "danger",
-            title = tags$span(icon("balance-scale"), " Overall vs Cancer Mortality (2000-2021)"),
-            plotlyOutput("mort_compare_plot", height = "380px"),
-            div(class = "interp-text",
-                tags$strong("Interpretation: "),
-                "Both series are normalised to their 2000 baseline (index = 100) to allow ",
-                "direct comparison of relative decline. Cancer mortality has declined ",
-                "faster than all-cause mortality, indicating broad improvements across ",
-                "multiple disease categories."
-            )
-          ),
-          box(
-            width = 6, status = "warning",
-            title = tags$span(icon("exchange-alt"), " Year-on-Year % Change in Death Rate"),
-            plotlyOutput("mort_roc_plot", height = "380px"),
-            div(class = "interp-text",
-                tags$strong("Interpretation: "),
-                "Positive values indicate years where mortality increased relative to the ",
-                "previous year; negative values indicate improvement. ",
-                "Large positive spikes may correspond to severe influenza seasons, ",
-                "cold winters, or pandemic years."
-            )
-          )
-        )
-      ),
-      
-      # -- TAB 6: Screening Calculator --------------------------------------
+      # =========================================================
+      # TAB 5: Screening Calculator
+      # =========================================================
       tabItem(
         tabName = "screening",
         fluidRow(
@@ -677,7 +714,7 @@ ui <- dashboardPage(
             numericInput(
               "ppv_prevalence",
               "Cancer Prevalence (per 100 000):",
-              value  = 3168,   # updated by server observer using Finland 2021 data
+              value  = 3168,
               min    = 1,
               max    = 10000,
               step   = 1
@@ -704,10 +741,187 @@ ui <- dashboardPage(
             hr(),
             plotlyOutput("ppv_plot", height = "320px"),
             hr(),
-            uiOutput("ppv_formula_display")
+            uiOutput("ppv_formula_display"),
+            uiOutput("ppv_interpretation")
+          )
+        )
+      ),
+
+      # =========================================================
+      # TAB 6: Theory
+      # =========================================================
+      tabItem(
+        tabName = "theory",
+        fluidRow(
+          box(
+            width = 12, status = "primary", solidHeader = TRUE,
+            title = "Mathematical Framework",
+            p(
+              "The statistical foundations used throughout this dashboard are ",
+              "presented below. Equations are rendered using LaTeX notation via MathJax."
+            )
+          )
+        ),
+        fluidRow(
+          # --- 1. Life Table / qx
+          box(
+            width = 6, status = "info",
+            title = "1. Age-specific Probability of Death \\( q_x \\)",
+            div(
+              class = "equation-box",
+              p(tags$strong("Definition:")),
+              p(
+                "The age-specific probability of death \\( q_x \\) represents the probability that an individual aged exactly \\( x \\) will die before reaching age \\( x+1 \\)."
+              ),
+              p("Formula:"),
+              p("$$q_x = \\frac{d_x}{l_x}$$"),
+              tags$ul(
+                tags$li("\\( d_x \\) - number of deaths between ages \\( x \\) and \\( x+1 \\)"),
+                tags$li("\\( l_x \\) - number of survivors reaching age \\( x \\) (radix = 100,000)")
+              ),
+              p("Force-of-mortality approximation:"),
+              p("$$q_x \\approx 1 - e^{-\\mu_x}$$"),
+              p("where \\( \\mu_x \\) is the hazard rate (force of mortality) at age \\( x \\).")
+            )
+          ),
+          # --- 2. Screening / PPV
+          box(
+            width = 6, status = "success",
+            title = "2. Bayesian Screening Metrics",
+            div(
+              class = "equation-box",
+              p(tags$strong("Positive Predictive Value (PPV)")),
+              p(
+                "PPV quantifies the probability that a positive test result correctly identifies disease. ",
+                "It depends on test characteristics and disease prevalence."
+              ),
+              p("Formula:"),
+              p("$$\\text{PPV} = \\frac{\\text{Sensitivity} \\times \\text{Prevalence}}{\\text{Sensitivity} \\times \\text{Prevalence} + (1 - \\text{Specificity}) \\times (1 - \\text{Prevalence})}$$"),
+              p("Complementary metric - Negative Predictive Value (NPV):"),
+              p("$$\\text{NPV} = \\frac{\\text{Specificity} \\times (1 - \\text{Prevalence})}{\\text{Specificity} \\times (1 - \\text{Prevalence}) + (1 - \\text{Sensitivity}) \\times \\text{Prevalence}}$$"),
+              tags$ul(
+                tags$li("\\( P(T^+|D^+) \\) - sensitivity"),
+                tags$li("\\( P(T^-|D^-) \\) - specificity"),
+                tags$li("\\( P(D^+) \\) - disease prevalence")
+              ),
+              p(
+                "These metrics are essential for evaluating the effectiveness of screening programs, especially when disease prevalence is low."
+              )
+            )
+          )
+        ),
+        # --- 3. Gompertz-Makeham
+        fluidRow(
+          box(
+            width = 12, status = "warning",
+            title = "3. Gompertz-Makeham Mortality Model",
+            div(
+              class = "equation-box",
+              p(
+                "The Gompertz-Makeham law models the exponential rise of mortality with age, separating age-independent and age-dependent hazards:"
+              ),
+              p("$$\\mu(x) = A + B e^{c x}$$"),
+              tags$ul(
+                tags$li("\\( A \\) - background hazard (age-independent)"),
+                tags$li("\\( B, c \\) - parameters governing age-dependent mortality")
+              ),
+              p("Estimates for Finland suggest \\( c \\approx 0.09 \\) for both sexes.")
+            )
+          )
+        ),
+        # --- 4. OR & RR + 5. Correlation
+        fluidRow(
+          box(
+            width = 6, status = "primary",
+            title = "4. Odds Ratio (OR) & Relative Risk (RR)",
+            div(
+              class = "equation-box",
+              p("These metrics compare mortality between males and females at a given age."),
+              p("Relative Risk (RR):"),
+              p("$$RR = \\frac{P_{male}}{P_{female}}$$"),
+              p("Odds Ratio (OR):"),
+              p("$$OR = \\frac{P_{male} / (1-P_{male})}{P_{female} / (1-P_{female})}$$"),
+              p(
+                "Where \\( P_{male} \\) and \\( P_{female} \\) are the probabilities of death for males and females respectively. ",
+                "These provide insight into sex-specific risk differences."
+              )
+            )
+          ),
+          box(
+            width = 6, status = "primary",
+            title = "5. Correlation Analysis",
+            div(
+              class = "equation-box",
+              p(
+                "To examine the association between healthcare capacity and cancer mortality, we compute the Pearson correlation coefficient:"
+              ),
+              p("$$r = \\frac{\\sum (x_i - \\bar{x})(y_i - \\bar{y})}{\\sqrt{\\sum (x_i - \\bar{x})^2 \\sum (y_i - \\bar{y})^2}}$$"),
+              p(
+                "A strong correlation does not imply causation; trends may be influenced by confounding factors such as population aging and healthcare improvements."
+              )
+            )
+          )
+        ),
+        # --- 6. Mortality Measures
+        fluidRow(
+          box(
+            width = 12, status = "primary",
+            title = "6. Mortality Measures in Epidemiology",
+            div(
+              class = "equation-box",
+              p(tags$strong("Crude Death Rate (CDR):")),
+              p("$$\\text{CDR} = \\frac{\\text{Deaths (all causes)}}{\\text{Mid-year population}} \\times 100{,}000$$"),
+              p("Reflects total mortality burden but is affected by age structure."),
+              p(tags$strong("Cause-Specific Mortality Rate (CSMR):")),
+              p("$$\\text{CSMR} = \\frac{\\text{Deaths from cause } c}{\\text{Mid-year population}} \\times 100{,}000$$"),
+              p("Isolates the contribution of a specific cause to overall mortality.")
+            )
+          )
+        ),
+        # --- 7. Linear Regression + 8. Logistic Regression
+        fluidRow(
+          box(
+            width = 6, status = "success",
+            title = "7. Linear Regression Interpretation",
+            div(
+              class = "equation-box",
+              p(tags$strong("Model structure:")),
+              p("$$\\text{death\\_rate} = \\beta_0 + \\beta_1 \\cdot \\text{beds} + \\beta_2 \\cdot \\text{cancer\\_deaths} + \\beta_3 \\cdot \\text{year} + \\varepsilon$$"),
+              p("\\( \\beta_1 \\): Change in death rate per additional bed per 100k, holding year and cancer deaths constant."),
+              p("\\( \\beta_3 \\): Captures underlying time trend (secular change) independent of beds or cancer.")
+            )
+          ),
+          box(
+            width = 6, status = "warning",
+            title = "8. Logistic Regression & Odds Ratio",
+            div(
+              class = "equation-box",
+              p(tags$strong("Log-odds model:")),
+              p("$$\\log\\left(\\frac{p}{1-p}\\right) = \\alpha + \\beta_1 X_1 + \\beta_2 X_2$$"),
+              p("where \\(p\\) = probability that death_rate \\(\\geq\\) 75th percentile (i.e., a top-25% mortality year)."),
+              p("Odds Ratio (OR):"),
+              p("$$OR = e^{\\hat{\\beta}_j}$$"),
+              p("OR > 1: predictor associated with increased odds of high mortality. OR < 1: associated with decreased odds.")
+            )
+          )
+        ),
+        # --- 9. Ecological Fallacy
+        fluidRow(
+          box(
+            width = 12, status = "danger",
+            title = "9. Ecological Fallacy & Causation Warning",
+            div(
+              class = "equation-box",
+              p(tags$strong("Ecological Fallacy:")),
+              p("When associations found in group-level (aggregate) data are incorrectly assumed to hold at the individual level."),
+              p("This dashboard uses country-level yearly data. Correlations between hospital beds and mortality do NOT imply that individual patients with more bed access have lower mortality risk."),
+              p(tags$strong("Association \u2260 Causation:")),
+              p("Observed associations may arise from confounding variables, reverse causation, or shared time trends (secular trends). All findings should be interpreted with caution.")
+            )
           )
         )
       )
-    )
-  )
-)
+
+    )  # end tabItems
+  )    # end dashboardBody
+)      # end dashboardPage
