@@ -421,7 +421,7 @@ ui <- dashboardPage(
             plotlyOutput("cancer_plot", height = "380px"),
             div(class = "interp-text",
                 tags$strong("Interpretation: "),
-                "Cancer mortality has shown a declining trend over the period 2000-2021, ",
+                "Cancer mortality has shown an increasing trend over the period 2000-2021, ",
                 "consistent with improvements in early detection, treatment, and prevention."
             )
           )
@@ -464,9 +464,7 @@ ui <- dashboardPage(
             div(class = "interp-text",
                 tags$strong("Interpretation: "),
                 "Both series are normalised to their 2000 baseline (index = 100) to allow ",
-                "direct comparison of relative decline. Cancer mortality has declined ",
-                "faster than all-cause mortality, indicating broad improvements across ",
-                "multiple disease categories."
+                "direct comparison of relative decline. Cancer mortality has changed relative to baseline, allowing comparison of trends over time."
             )
           )
         )
@@ -767,6 +765,9 @@ ui <- dashboardPage(
               p("$$\\text{PPV} = \\frac{\\text{Sensitivity} \\times \\text{Prevalence}}{\\text{Sensitivity} \\times \\text{Prevalence} + (1 - \\text{Specificity}) \\times (1 - \\text{Prevalence})}$$"),
               p("Complementary metric - Negative Predictive Value (NPV):"),
               p("$$\\text{NPV} = \\frac{\\text{Specificity} \\times (1 - \\text{Prevalence})}{\\text{Specificity} \\times (1 - \\text{Prevalence}) + (1 - \\text{Sensitivity}) \\times \\text{Prevalence}}$$"),
+              p("Likelihood Ratios:"),
+              p("$$LR^+ = \\frac{\\text{Sensitivity}}{1 - \\text{Specificity}}$$"),
+              p("$$LR^- = \\frac{1 - \\text{Sensitivity}}{\\text{Specificity}}$$"),
               tags$ul(
                 tags$li("\\( P(T^+|D^+) \\) - sensitivity"),
                 tags$li("\\( P(T^-|D^-) \\) - specificity"),
@@ -885,6 +886,61 @@ ui <- dashboardPage(
               p("This dashboard uses country-level yearly data. Correlations between hospital beds and mortality do NOT imply that individual patients with more bed access have lower mortality risk."),
               p(tags$strong("Association \u2260 Causation:")),
               p("Observed associations may arise from confounding variables, reverse causation, or shared time trends (secular trends). All findings should be interpreted with caution.")
+            )
+          )
+        ),
+        # --- 10. Age-Standardized Death Rate
+        fluidRow(
+          box(
+            width = 6, status = "info",
+            title = "10. Age-Standardized Death Rate (Direct Method)",
+            div(
+              class = "equation-box",
+              p("$$ADR = \\frac{\\sum E_x^{C,S} \\cdot \\hat{m}_x}{\\sum E_x^{C,S}}$$"),
+              p("A weighted average of age-specific central death rates, where the weights are derived from a standard reference population. This removes the confounding effect of differing age structures over time.")
+            )
+          ),
+          # --- 11. Stillbirth Rate
+          box(
+            width = 6, status = "info",
+            title = "11. Stillbirth Rate",
+            div(
+              class = "equation-box",
+              p("$$\\text{Stillbirth Rate} = \\frac{\\text{Stillbirths}}{\\text{Live Births} + \\text{Stillbirths}} \\times 1000$$"),
+              p("The denominator represents total births, ensuring that all pregnancies reaching viability are included in the population at risk.")
+            )
+          )
+        ),
+        # --- 12. PMR + 13. Relative % Change
+        fluidRow(
+          box(
+            width = 6, status = "warning",
+            title = "12. Proportionate Mortality Ratio",
+            div(
+              class = "equation-box",
+              p("$$\\text{Proportion} = \\frac{\\text{Deaths from specific cause}}{\\text{Total deaths from all causes}} \\times 100$$"),
+              p("Measures the relative contribution of a specific cause of death compared to all other causes, rather than population risk.")
+            )
+          ),
+          box(
+            width = 6, status = "warning",
+            title = "13. Relative Percentage Change",
+            div(
+              class = "equation-box",
+              p("$$\\text{Change (\\%)} = \\frac{\\text{Current} - \\text{Baseline}}{\\text{Baseline}} \\times 100$$"),
+              p("Used to quantify temporal changes in mortality rates, including year-on-year variation and long-term trends.")
+            )
+          )
+        ),
+        # --- 14. Index Normalization
+        fluidRow(
+          box(
+            width = 12, status = "primary",
+            title = "14. Index Normalization",
+            div(
+              class = "equation-box",
+              p("$$\\text{Index}_t = \\frac{x_t}{x_{\\text{baseline}}} \\times 100$$"),
+              p("Normalizes values to a baseline year to allow comparison of relative trends across different indicators.")
             )
           )
         )
