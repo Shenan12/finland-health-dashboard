@@ -240,6 +240,14 @@ ui <- dashboardPage(
                            href = "https://stat.fi/til/ksyyt/index_en.html",
                            target = "_blank"),
                     ". Accessed 2026."
+                  ),
+                  tags$li(
+                    "Statistics Finland. ",
+                    tags$em("Statistical Databases."), " ",
+                    tags$a("https://stat.fi/en/services/statistical-data-services/statistical-databases",
+                           href = "https://stat.fi/en/services/statistical-data-services/statistical-databases",
+                           target = "_blank"),
+                    ". Accessed 2026."
                   )
                 )
             )
@@ -512,25 +520,6 @@ ui <- dashboardPage(
                 "Hospital bed capacity in Finland has declined steadily since 2000, ",
                 "reflecting a policy shift toward outpatient care and efficiency-driven ",
                 "healthcare restructuring."
-            )
-          )
-        ),
-
-        # Correlation box (scatter removed – regression scatter below is more informative)
-        fluidRow(
-          box(
-            width = 12, status = "warning",
-            title = "Statistical Link: Beds vs. Cancer Mortality",
-            fluidRow(
-              valueBoxOutput("corr_box", width = 6)
-            ),
-            div(class = "interp-text",
-                tags$strong("Interpretation: "),
-                "This represents an ecological correlation over time. ",
-                tags$strong("It does not imply causation."),
-                " Both variables may be influenced ",
-                "by underlying factors such as population aging and healthcare improvements. ",
-                "See the regression scatter below for a more detailed view."
             )
           )
         ),

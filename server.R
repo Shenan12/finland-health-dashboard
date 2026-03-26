@@ -274,19 +274,6 @@ server <- function(input, output, session) {
       )
   })
   
-  # -- Correlation Box --------------------------------------------------------
-  output$corr_box <- renderValueBox({
-    # Calculate Pearson correlation (r)
-    r_val <- cor(correlation_df$beds_per_100k, correlation_df$deaths_per_100k, use = "complete.obs")
-    
-    valueBox(
-      value = round(r_val, 3),
-      subtitle = "Pearson Correlation (r)",
-      icon = icon("link"),
-      color = if (r_val < -0.7) "red" else "yellow"
-    )
-  })
-  
   # ==========================================================================
   # TAB 5: Screening Calculator
   # ==========================================================================
