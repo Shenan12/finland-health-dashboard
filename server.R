@@ -739,4 +739,126 @@ server <- function(input, output, session) {
         paper_bgcolor = "#fafafa"
       )
   })
+
+  # ---------- Birth Rate Plot ------------------------------------------------
+  output$birth_rate_plot <- renderPlotly({
+    plot_ly(birth_rate_df, x = ~year, y = ~crude_birth_rate,
+            type = "scatter", mode = "lines+markers",
+            line   = list(color = "#2980b9", width = 2),
+            marker = list(color = "#2980b9", size = 6),
+            hovertemplate = "<b>Year:</b> %{x}<br><b>Live Births:</b> %{y:,}<extra></extra>") |>
+      layout(
+        xaxis = list(title = "Year", showgrid = TRUE, gridcolor = "#e0e0e0",
+                     dtick = 2, tickformat = "d"),
+        yaxis = list(title = "Total Live Births", showgrid = TRUE, gridcolor = "#e0e0e0"),
+        plot_bgcolor  = "#fafafa",
+        paper_bgcolor = "#fafafa"
+      )
+  })
+
+  # ---------- Stillbirth Rate Plot -------------------------------------------
+  output$stillbirth_plot <- renderPlotly({
+    plot_ly(stillbirth_df, x = ~year, y = ~stillbirth_rate,
+            type = "scatter", mode = "lines+markers",
+            line   = list(color = "#8e44ad", width = 2),
+            marker = list(color = "#8e44ad", size = 6),
+            hovertemplate = "<b>Year:</b> %{x}<br><b>Stillbirth Rate (per 1 000):</b> %{y:.2f}<extra></extra>") |>
+      layout(
+        xaxis = list(title = "Year", showgrid = TRUE, gridcolor = "#e0e0e0",
+                     dtick = 2, tickformat = "d"),
+        yaxis = list(title = "Stillbirth Rate per 1 000 births", showgrid = TRUE, gridcolor = "#e0e0e0"),
+        plot_bgcolor  = "#fafafa",
+        paper_bgcolor = "#fafafa"
+      )
+  })
+
+  # ---------- Cause-of-Death Stacked Area Chart ------------------------------
+  output$cause_area_plot <- renderPlotly({
+    cause_colors <- c(
+      "Infectious Diseases"  = "#2ecc71",
+      "Malignant Neoplasms"  = "#e74c3c",
+      "Endocrine/Metabolic"  = "#f39c12",
+      "Dementia/Alzheimer"   = "#9b59b6",
+      "Circulatory Diseases" = "#3498db",
+      "Respiratory Diseases" = "#1abc9c",
+      "Alcohol-Related"      = "#e67e22",
+      "Accidents & Violence" = "#95a5a6"
+    )
+
+    p <- plot_ly()
+    for (cname in names(cause_colors)) {
+      sub <- cause_summary_df |> filter(cause == cname)
+      if (nrow(sub) > 0) {
+        p <- p |> add_trace(
+          data = sub, x = ~year, y = ~deaths,
+          type = "scatter", mode = "none", name = cname,
+          fill = "tonexty",
+          fillcolor = cause_colors[[cname]],
+          line = list(color = cause_colors[[cname]]),
+          stackgroup = "one",
+          hovertemplate = paste0("<b>", cname, "</b><br>Year: %{x}<br>Deaths: %{y:,}<extra></extra>")
+        )
+      }
+    }
+    p |> layout(
+      xaxis = list(title = "Year", showgrid = TRUE, gridcolor = "#e0e0e0",
+                   dtick = 2, tickformat = "d"),
+      yaxis = list(title = "Deaths (count)", showgrid = TRUE, gridcolor = "#e0e0e0"),
+      legend = list(orientation = "h", y = -0.25),
+      plot_bgcolor  = "#fafafa",
+      paper_bgcolor = "#fafafa"
+    )
+  })
+
+  # ---------- Tumour Share Plot -----------------------------------------------
+  output$tumour_share_plot <- renderPlotly({
+    plot_ly(tumour_share_df, x = ~year, y = ~tumour_pct,
+            type = "scatter", mode = "lines+markers",
+            line   = list(color = "#c0392b", width = 2),
+            marker = list(color = "#c0392b", size = 6),
+            fill   = "tozeroy",
+            fillcolor = "rgba(192,57,43,0.15)",
+            hovertemplate = "<b>Year:</b> %{x}<br><b>Cancer share:</b> %{y:.1f}%<extra></extra>") |>
+      layout(
+        xaxis = list(title = "Year", showgrid = TRUE, gridcolor = "#e0e0e0",
+                     dtick = 2, tickformat = "d"),
+        yaxis = list(title = "Cancer Deaths as % of All Deaths",
+                     showgrid = TRUE, gridcolor = "#e0e0e0"),
+        plot_bgcolor  = "#fafafa",
+        paper_bgcolor = "#fafafa"
+      )
+  })
+
+  # ---------- PPV Interpretation Text ----------------------------------------
+  output$ppv_interpretation <- renderUI({
+    res <- ppv_results()
+    ppv_pct <- res$ppv * 100
+    msg <- if (ppv_pct < 20) {
+      tagList(
+        tags$strong("\u26a0 High False Positive Rate: "),
+        "A PPV below 20% indicates the majority of positive results are false positives. ",
+        "This is common when disease prevalence is low. Consider raising prevalence or improving specificity."
+      )
+    } else if (ppv_pct >= 50) {
+      tagList(
+        tags$strong("\u2713 Clinically Useful: "),
+        "A PPV above 50% indicates the test is clinically meaningful for this population. ",
+        "More than half of positive test results correctly identify disease."
+      )
+    } else {
+      tagList(
+        tags$strong("Moderate PPV: "),
+        "Between 20% and 50% of positive results correctly identify disease. ",
+        "Consider the clinical context before acting on positive results."
+      )
+    }
+    div(class = "interp-text", msg,
+        br(), br(),
+        tags$strong("Note on prevalence: "),
+        "Low disease prevalence (as seen in population-level cancer screening) strongly reduces PPV ",
+        "even when sensitivity and specificity are high. This explains why mass screening programs ",
+        "often have modest PPV values \u2014 the Finnish Cancer Registry estimated ~",
+        finland_2021_prevalence, " cases per 100 000 population."
+    )
+  })
 }
