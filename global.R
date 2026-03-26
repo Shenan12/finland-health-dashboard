@@ -159,9 +159,11 @@ birth_rate_df <- read_csv(
   na.omit()
 
 # -- 7. Stillbirths ----------------------------------------------------------
+# StillBirths.csv structure: line 1 = title, line 2 = blank, line 3 = column headers
+# skip = 2 skips the title and blank line so line 3 becomes the column header row
 stillbirth_raw <- read_csv(
   file.path("data", "StillBirths.csv"),
-  skip = 1,
+  skip = 2,
   show_col_types = FALSE
 ) |>
   clean_names()
