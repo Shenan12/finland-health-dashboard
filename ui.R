@@ -299,7 +299,7 @@ ui <- dashboardPage(
             )
           ),
           box(
-            width = 9, status = "primary", title = "q\u2093 by Age",
+            width = 9, status = "primary", title = "q\u2093 (Per Mile) by Age",
             plotlyOutput("demo_plot", height = "450px")
           )
         ),

@@ -106,7 +106,7 @@ server <- function(input, output, session) {
     p |>
       layout(
         title  = list(
-          text = paste0("Finland - Age-specific Mortality (q\u2093), Year: <b>", sel_year, "</b>"),
+          text = paste0("Finland - Age-specific (q\u2093), Year: <b>", sel_year, "</b>"),
           font = list(size = 14)
         ),
         xaxis  = list(
