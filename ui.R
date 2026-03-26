@@ -508,7 +508,7 @@ ui <- dashboardPage(
                 tags$strong("Ecological Study Limitation: "),
                 "All analyses in this section use aggregate yearly data, not individual patient data. ",
                 "This is an ecological study design. Associations observed here may reflect ",
-                "confounding by time trends (secular trends) and ",
+                "confounding by time trends (secular trends), and ",
                 tags$strong("cannot establish causation.")
             )
           )
@@ -621,7 +621,7 @@ ui <- dashboardPage(
           box(
             width = 6, status = "warning",
             title = tags$span(icon("percent"), " Logistic Regression: Predictors of High Mortality"),
-            p("Binary outcome: death rate above the top 25% threshold (75th percentile) (1 = high, 0 = low)."),
+            p("Binary outcome: 1 if death rate is in the top 25% (above 75th percentile), 0 otherwise."),
             tableOutput("glm_coef_table"),
             br(),
             div(class = "interp-text",
@@ -629,7 +629,7 @@ ui <- dashboardPage(
                 "Odds ratios (OR) greater than 1 indicate that higher values of the ",
                 "predictor are associated with increased odds of a high-mortality year. ",
                 "An OR < 1 for beds suggests more bed capacity is associated with lower ",
-                "odds of above top-25% overall mortality."
+                "odds of the mortality rate being in the highest quartile (above the 75th percentile)."
             )
           ),
           box(
@@ -650,8 +650,8 @@ ui <- dashboardPage(
             div(class = "interp-text",
                 tags$strong("How to read: "),
                 "The predicted probability (0-100%) reflects the logistic model's ",
-                "estimate that a year with these indicator values would have an ",
-                "above top-25% overall death rate."
+                "estimate that a year with these indicator values would have a ",
+                "death rate above the 75th percentile (top 25% of historical years)."
             )
           )
         ),

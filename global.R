@@ -189,7 +189,7 @@ health_df <- beds_raw |>
   na.omit() |>
   arrange(year) |>
   mutate(
-    # Binary outcome: 1 if death rate above 75th percentile, 0 otherwise
+    # Binary outcome: 1 if death rate above 75th percentile (top 25%), 0 otherwise
     high_mortality = as.integer(death_rate > quantile(death_rate, 0.75, na.rm = TRUE)),
     # One-year lag of hospital beds to capture delayed healthcare effects
     beds_lag1      = lag(beds_per_100k, 1)
