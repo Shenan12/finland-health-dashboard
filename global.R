@@ -142,17 +142,18 @@ tumour_share_df <- death_rate_full |>
   mutate(tumour_pct = cancer_deaths / total_deaths * 100) |>
   na.omit()
 
-# -- 6. Crude Birth Rate -----------------------------------------------------
+# -- 6. Live Births -----------------------------------------------------------
+# crude_birth_rate in the source file is a count (total live births), not a rate
 birth_rate_df <- read_csv(
   file.path("data", "CrudeBirthRate.csv"),
   skip = 2,
   show_col_types = FALSE
 ) |>
   clean_names() |>
-  select(year, crude_birth_rate = total_live_births) |>
+  select(year, live_births = total_live_births) |>
   mutate(
-    year             = as.integer(year),
-    crude_birth_rate = as.numeric(crude_birth_rate)
+    year        = as.integer(year),
+    live_births = as.numeric(live_births)
   ) |>
   filter(year >= 2000) |>
   na.omit()
@@ -176,7 +177,8 @@ stillbirth_df <- stillbirth_raw |>
   select(year, stillbirths) |>
   left_join(birth_rate_df, by = "year") |>
   mutate(
-    stillbirth_rate = stillbirths / (crude_birth_rate + stillbirths) * 1000
+    # Standard stillbirth rate: stillbirths / (live_births + stillbirths) * 1000
+    stillbirth_rate = stillbirths / (live_births + stillbirths) * 1000
   ) |>
   filter(!is.na(stillbirth_rate), year >= 2000)
 
@@ -189,7 +191,10 @@ health_df <- beds_raw |>
   na.omit() |>
   arrange(year) |>
   mutate(
-    # Binary outcome: 1 if death rate above 75th percentile (top 25%), 0 otherwise
+    # Binary outcome: 1 if death rate above 75th percentile (top 25%), 0 otherwise.
+    # The 75th percentile was chosen over the median to define a stricter "high mortality"
+    # threshold, capturing only the worst-performing years and making the logistic model
+    # more clinically meaningful.
     high_mortality = as.integer(death_rate > quantile(death_rate, 0.75, na.rm = TRUE)),
     # One-year lag of hospital beds to capture delayed healthcare effects
     beds_lag1      = lag(beds_per_100k, 1)
@@ -218,13 +223,15 @@ correlation_df <- inner_join(
 # -- 12. Pre-fit Statistical Models (global, for performance) ---------------
 
 # Multivariate linear regression: overall death rate ~ beds + cancer deaths + year
+# Including year as a predictor controls for underlying secular (time) trends,
+# isolating the marginal effects of beds and cancer mortality independently of time.
 lm_model <- lm(death_rate ~ beds_per_100k + deaths_per_100k + year, data = health_df)
 
 # Logistic regression: high mortality (binary) ~ beds + cancer deaths
-# Use complete cases only (excluding first row which has NA beds_lag1)
-health_df_complete <- health_df |> filter(!is.na(beds_lag1))
+# health_df has no NAs in predictor/outcome columns (beds_lag1 NA only in first row,
+# which is not used by this model)
 glm_model <- glm(
   high_mortality ~ beds_per_100k + deaths_per_100k,
-  data   = health_df_complete,
+  data   = health_df |> select(high_mortality, beds_per_100k, deaths_per_100k) |> na.omit(),
   family = binomial
 )

@@ -188,29 +188,11 @@ ui <- dashboardPage(
           )
         ),
 
-        # Key insight value boxes
+        # Key insight value boxes (computed dynamically in server.R)
         fluidRow(
-          valueBox(
-            value    = "\u2193 30%",
-            subtitle = "Death rate reduction 2000-2024",
-            icon     = icon("arrow-down"),
-            color    = "green",
-            width    = 4
-          ),
-          valueBox(
-            value    = "~22%",
-            subtitle = "of all deaths are cancer-related",
-            icon     = icon("ribbon"),
-            color    = "red",
-            width    = 4
-          ),
-          valueBox(
-            value    = "Declining",
-            subtitle = "Hospital beds per 100k since 2000",
-            icon     = icon("bed"),
-            color    = "blue",
-            width    = 4
-          )
+          valueBoxOutput("home_mort_change",  width = 4),
+          valueBoxOutput("home_cancer_share", width = 4),
+          valueBoxOutput("home_beds_trend",   width = 4)
         ),
 
         # Data coverage info boxes
@@ -534,24 +516,21 @@ ui <- dashboardPage(
           )
         ),
 
-        # Correlation box + scatter
+        # Correlation box (scatter removed – regression scatter below is more informative)
         fluidRow(
           box(
-            width = 4, status = "warning",
-            title = "Statistical Link",
-            valueBoxOutput("corr_box", width = 12)
-          ),
-          box(
-            width = 8, status = "warning",
-            title = "Correlation: Beds vs. Cancer Mortality",
-            plotlyOutput("corr_scatter", height = "300px"),
-            br(),
+            width = 12, status = "warning",
+            title = "Statistical Link: Beds vs. Cancer Mortality",
+            fluidRow(
+              valueBoxOutput("corr_box", width = 6)
+            ),
             div(class = "interp-text",
                 tags$strong("Interpretation: "),
                 "This represents an ecological correlation over time. ",
                 tags$strong("It does not imply causation."),
                 " Both variables may be influenced ",
-                "by underlying factors such as population aging and healthcare improvements."
+                "by underlying factors such as population aging and healthcare improvements. ",
+                "See the regression scatter below for a more detailed view."
             )
           )
         ),

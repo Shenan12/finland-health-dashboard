@@ -11,10 +11,57 @@ server <- function(input, output, session) {
       value = round(finland_2021_prevalence, 1)
     )
   })
-  
+
   # ==========================================================================
-  # TAB 3: Demographics
+  # TAB 1: Home – dynamic insight value boxes
   # ==========================================================================
+
+  output$home_mort_change <- renderValueBox({
+    sorted <- death_raw |> arrange(year)
+    first_rate <- sorted$death_rate[1]
+    last_rate  <- sorted$death_rate[nrow(sorted)]
+    pct_chg    <- round((last_rate - first_rate) / first_rate * 100, 1)
+    arrow      <- if (pct_chg < 0) "\u2193" else "\u2191"
+    clr        <- if (pct_chg < 0) "green" else "red"
+    valueBox(
+      value    = paste0(arrow, " ", abs(pct_chg), "%"),
+      subtitle = paste0("Death rate change (", sorted$year[1], "\u2013", sorted$year[nrow(sorted)], ")"),
+      icon     = icon(if (pct_chg < 0) "arrow-down" else "arrow-up"),
+      color    = clr,
+      width    = 4
+    )
+  })
+
+  output$home_cancer_share <- renderValueBox({
+    latest_pct <- tumour_share_df |>
+      filter(year == max(year)) |>
+      pull(tumour_pct)
+    valueBox(
+      value    = paste0("~", round(latest_pct, 0), "%"),
+      subtitle = paste0("of all deaths are cancer-related (", max(tumour_share_df$year), ")"),
+      icon     = icon("ribbon"),
+      color    = "red",
+      width    = 4
+    )
+  })
+
+  output$home_beds_trend <- renderValueBox({
+    beds_sorted <- beds_raw |> arrange(year)
+    first_beds  <- beds_sorted$beds_per_100k[1]
+    last_beds   <- beds_sorted$beds_per_100k[nrow(beds_sorted)]
+    trend_label <- if (last_beds < first_beds) "Declining" else "Increasing"
+    trend_color <- if (last_beds < first_beds) "blue" else "green"
+    trend_icon  <- if (last_beds < first_beds) "arrow-down" else "arrow-up"
+    valueBox(
+      value    = trend_label,
+      subtitle = "Hospital beds per 100k since 2000",
+      icon     = icon(trend_icon),
+      color    = trend_color,
+      width    = 4
+    )
+  })
+
+
   
   output$demo_plot <- renderPlotly({
     
@@ -238,33 +285,6 @@ server <- function(input, output, session) {
       icon = icon("link"),
       color = if (r_val < -0.7) "red" else "yellow"
     )
-  })
-  
-  # -- Correlation Scatter Plot -----------------------------------------------
-  output$corr_scatter <- renderPlotly({
-    # Fit a linear regression line
-    fit <- lm(deaths_per_100k ~ beds_per_100k, data = correlation_df)
-    
-    plot_ly(correlation_df, x = ~beds_per_100k) |>
-      add_markers(
-        y = ~deaths_per_100k,
-        name = "Years (2000-2021)",
-        marker = list(color = "#8e44ad", size = 8),
-        hovertemplate = "<b>Beds / 100k:</b> %{x:.1f}<br><b>Cancer Deaths / 100k:</b> %{y:.1f}<extra></extra>"
-      ) |>
-      add_lines(
-        x = ~beds_per_100k,
-        y = fitted(fit),
-        name = "Trend",
-        line = list(color = "#2c3e50", dash = "dash")
-      ) |>
-      layout(
-        xaxis = list(title = "Hospital Beds per 100k", showgrid = TRUE, gridcolor = "#e0e0e0"),
-        yaxis = list(title = "Cancer Deaths per 100k", showgrid = TRUE, gridcolor = "#e0e0e0"),
-        plot_bgcolor  = "#fafafa",
-        paper_bgcolor = "#fafafa",
-        showlegend = FALSE
-      )
   })
   
   # ==========================================================================
@@ -742,7 +762,7 @@ server <- function(input, output, session) {
 
   # ---------- Birth Rate Plot ------------------------------------------------
   output$birth_rate_plot <- renderPlotly({
-    plot_ly(birth_rate_df, x = ~year, y = ~crude_birth_rate,
+    plot_ly(birth_rate_df, x = ~year, y = ~live_births,
             type = "scatter", mode = "lines+markers",
             line   = list(color = "#2980b9", width = 2),
             marker = list(color = "#2980b9", size = 6),
