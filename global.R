@@ -150,7 +150,7 @@ birth_rate_df <- read_csv(
   show_col_types = FALSE
 ) |>
   clean_names() |>
-  select(year, live_births = total_live_births) |>
+  select(year, live_births = matches("total.*live.*births")) |>
   mutate(
     year        = as.integer(year),
     live_births = as.numeric(live_births)
