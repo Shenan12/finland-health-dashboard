@@ -174,19 +174,7 @@ ui <- dashboardPage(
           )
         ),
 
-        # Research Questions
-        fluidRow(
-          box(
-            width = 12, status = "info",
-            title = "Research Questions",
-            tags$ul(
-              tags$li("How has mortality changed over time in Finland?"),
-              tags$li("What factors influence overall mortality rates?"),
-              tags$li("How does disease composition evolve across decades?"),
-              tags$li("What is the role of healthcare capacity in population health?")
-            )
-          )
-        ),
+    
 
         # Key insight value boxes (computed dynamically in server.R)
         fluidRow(
