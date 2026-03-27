@@ -410,7 +410,7 @@ ui <- dashboardPage(
             div(class = "interp-text",
                 tags$strong("Interpretation: "),
                 "Cancer mortality has shown an increasing trend over the period 2000-2021, ",
-                "consistent with improvements in early detection, treatment, and prevention."
+                "consistent with improvements in early and precise detection, and aging population."
             )
           )
         ),
@@ -503,9 +503,8 @@ ui <- dashboardPage(
             plotlyOutput("beds_plot", height = "380px"),
             div(class = "interp-text",
                 tags$strong("Interpretation: "),
-                "Hospital bed capacity in Finland has declined steadily since 2000, ",
-                "reflecting a policy shift toward outpatient care and efficiency-driven ",
-                "healthcare restructuring."
+                "Hospital bed capacity in Finland has declined steadily since 2000, "
+              
             )
           )
         ),
@@ -877,7 +876,7 @@ ui <- dashboardPage(
             )
           )
         ),
-        # --- 10. Age-Standardized Death Rate
+        # --- 10. Age-Standardized Death Rate + 11. Stillbirth Rate
         fluidRow(
           box(
             width = 6, status = "info",
@@ -885,7 +884,14 @@ ui <- dashboardPage(
             div(
               class = "equation-box",
               p("$$ADR = \\frac{\\sum E_x^{C,S} \\cdot \\hat{m}_x}{\\sum E_x^{C,S}}$$"),
-              p("A weighted average of age-specific central death rates, where the weights are derived from a standard reference population. This removes the confounding effect of differing age structures over time.")
+              p(
+                "Where \\( E_x^{C,S} \\) is the standard reference population weight for age group \\( x \\), ",
+                "and \\( \\hat{m}_x \\) is the age-specific central death rate for age group \\( x \\) in the observed population."
+              ),
+              p(
+                "Note: For this dashboard, the ADR is a pre-calculated metric provided directly by Statistics Finland, ",
+                "already adjusted to a standard population to remove the confounding effect of differing age structures over time."
+              )
             )
           ),
           # --- 11. Stillbirth Rate
@@ -895,6 +901,10 @@ ui <- dashboardPage(
             div(
               class = "equation-box",
               p("$$\\text{Stillbirth Rate} = \\frac{\\text{Stillbirths}}{\\text{Live Births} + \\text{Stillbirths}} \\times 1000$$"),
+              p(
+                "Where \\( \\text{Stillbirths} \\) is the total number of fetal deaths at or after a specific gestational age, ",
+                "and \\( \\text{Live Births} \\) is the total number of infants born alive."
+              ),
               p("The denominator represents total births, ensuring that all pregnancies reaching viability are included in the population at risk.")
             )
           )
@@ -907,6 +917,10 @@ ui <- dashboardPage(
             div(
               class = "equation-box",
               p("$$\\text{Proportion} = \\frac{\\text{Deaths from specific cause}}{\\text{Total deaths from all causes}} \\times 100$$"),
+              p(
+                "Where \\( \\text{Deaths from specific cause} \\) is the number of deaths attributed to a particular condition, ",
+                "and \\( \\text{Total deaths from all causes} \\) is the absolute total of all deaths in the population during the same period."
+              ),
               p("Measures the relative contribution of a specific cause of death compared to all other causes, rather than population risk.")
             )
           ),
@@ -916,6 +930,10 @@ ui <- dashboardPage(
             div(
               class = "equation-box",
               p("$$\\text{Change (\\%)} = \\frac{\\text{Current} - \\text{Baseline}}{\\text{Baseline}} \\times 100$$"),
+              p(
+                "Where \\( \\text{Current} \\) is the value of the metric in the observation period, ",
+                "and \\( \\text{Baseline} \\) is the value of the metric in the reference or starting period."
+              ),
               p("Used to quantify temporal changes in mortality rates, including year-on-year variation and long-term trends.")
             )
           )
@@ -928,6 +946,11 @@ ui <- dashboardPage(
             div(
               class = "equation-box",
               p("$$\\text{Index}_t = \\frac{x_t}{x_{\\text{baseline}}} \\times 100$$"),
+              p(
+                "Where \\( \\text{Index}_t \\) is the normalized value at time \\( t \\), ",
+                "\\( x_t \\) is the raw value of the indicator at time \\( t \\), ",
+                "and \\( x_{\\text{baseline}} \\) is the raw value of the indicator during the chosen baseline period."
+              ),
               p("Normalizes values to a baseline year to allow comparison of relative trends across different indicators.")
             )
           )

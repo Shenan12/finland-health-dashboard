@@ -612,26 +612,6 @@ server <- function(input, output, session) {
     )
   })
 
-  output$mort_change_box <- renderValueBox({
-    sorted <- death_raw |> arrange(year)
-    n      <- nrow(sorted)
-    if (n >= 2) {
-      last_rate <- sorted$death_rate[n]
-      prev_rate <- sorted$death_rate[n - 1]
-      pct_chg   <- round((last_rate - prev_rate) / prev_rate * 100, 2)
-      color_val <- if (pct_chg > 0) "yellow" else "green"
-      icon_val  <- if (pct_chg > 0) icon("arrow-up") else icon("arrow-down")
-      valueBox(
-        value    = paste0(ifelse(pct_chg > 0, "+", ""), pct_chg, "%"),
-        subtitle = paste0("Change vs Previous Year (",
-                          sorted$year[n - 1], "\u2192", sorted$year[n], ")"),
-        icon     = icon_val,
-        color    = color_val
-      )
-    } else {
-      valueBox("N/A", "Insufficient data", icon = icon("question"), color = "gray")
-    }
-  })
 
   # -- Time series with LOESS ------------------------------------------------
   output$mort_ts_plot <- renderPlotly({
